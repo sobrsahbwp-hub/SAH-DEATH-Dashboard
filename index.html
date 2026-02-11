@@ -1,143 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sadiq Abbasi Hospital Dashboard</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #f2f7fb;
-    color: #1e2a38;
-}
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background-color: #f4f8fb;
+        color: #2c3e50;
+    }
 
-.header {
-    text-align: center;
-    padding: 30px 10px;
-    background: linear-gradient(135deg, #e6f2ff, #ffffff);
-    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-}
+    .header {
+        text-align: center;
+        padding: 20px;
+        background: linear-gradient(to right, #e3f2fd, #ffffff);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
 
-.header h1 {
-    margin: 0;
-    font-size: 28px;
-    letter-spacing: 2px;
-    color: #005fa3;
-}
+    .header img {
+        height: 80px;
+        margin-bottom: 10px;
+    }
 
-.subtitle {
-    font-size: 14px;
-    margin-top: 6px;
-    color: #555;
-}
+    .header h1 {
+        margin: 5px 0;
+        font-size: 26px;
+        letter-spacing: 1px;
+        color: #0d47a1;
+    }
 
-.container {
-    padding: 40px;
-    display: flex;
-    justify-content: center;
-}
+    .container {
+        width: 80%;
+        margin: 40px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
 
-.card {
-    width: 500px;
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-}
+    .card {
+        background: #f9fbfd;
+        border-left: 5px solid #1976d2;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
 
-label {
-    font-weight: 600;
-    display: block;
-    margin-bottom: 8px;
-}
+    label {
+        font-weight: 600;
+        font-size: 16px;
+    }
 
-select {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-    background: #fff;
-}
+    select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+        background-color: #ffffff;
+        transition: 0.3s;
+    }
 
-.stats {
-    margin-top: 20px;
-    font-size: 14px;
-    color: #444;
-}
+    select:focus {
+        border-color: #1976d2;
+        outline: none;
+        box-shadow: 0 0 5px rgba(25,118,210,0.3);
+    }
 
-.footer {
-    text-align: center;
-    padding: 15px;
-    font-size: 12px;
-    color: gray;
-}
+    footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 13px;
+        color: #777;
+    }
 </style>
 </head>
 
 <body>
 
 <div class="header">
-    <h1>SADIQ ABBASI HOSPITAL</h1>
-    <div class="subtitle">BAHAWALPUR | Hi-Tech Hospital Dashboard</div>
+    <!-- Replace src with actual monogram image URL -->
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/HD_transparent_picture.png" alt="Monogram">
+    <h1>SADIQ ABBASI HOSPITAL, BAHAWALPUR</h1>
+    <p>Hi-Tech Administrative Dashboard</p>
 </div>
 
 <div class="container">
     <div class="card">
-        <label for="departmentSelect">Select Department</label>
-        <select id="departmentSelect">
-            <option value="All">All Departments</option>
+        <label for="departmentDropdown">Select Department (From DATA Sheet - Column I):</label>
+        <select id="departmentDropdown">
+            <option>Loading departments...</option>
         </select>
-
-        <div class="stats">
-            Total Unique Departments: <span id="deptCount">0</span>
-        </div>
     </div>
 </div>
 
-<div class="footer">
-    Live Data Connected from Google Sheet (DATA)
-</div>
+<footer>
+    © 2026 Sadiq Abbasi Hospital Bahawalpur | Digital Monitoring System
+</footer>
 
 <script>
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
 
-fetch(csvUrl)
+fetch(sheetURL)
 .then(response => response.text())
 .then(data => {
-    const rows = data.split("\n").map(row => row.split(","));
-    const headers = rows[0].map(h => h.trim());
-    
-    const deptIndex = headers.indexOf("DEPARTMENT");
+    const rows = data.split("\n");
+    const departmentSet = new Set();
 
-    if (deptIndex === -1) {
-        alert("DEPARTMENT column not found in sheet.");
-        return;
-    }
-
-    // Extract department column values
-    const departments = rows.slice(1)
-        .map(row => row[deptIndex] ? row[deptIndex].trim() : "")
-        .filter(value => value !== "");
-
-    // Get unique values
-    const uniqueDepartments = [...new Set(departments)].sort();
-
-    const select = document.getElementById("departmentSelect");
-
-    uniqueDepartments.forEach(dept => {
-        const option = document.createElement("option");
-        option.value = dept;
-        option.textContent = dept;
-        select.appendChild(option);
+    rows.slice(1).forEach(row => {
+        const columns = row.split(",");
+        if(columns[8]) {  // Column I (9th column, index 8)
+            departmentSet.add(columns[8].trim());
+        }
     });
 
-    document.getElementById("deptCount").textContent = uniqueDepartments.length;
+    const dropdown = document.getElementById("departmentDropdown");
+    dropdown.innerHTML = '<option value="">-- Select Department --</option>';
+
+    departmentSet.forEach(dept => {
+        if(dept !== "") {
+            const option = document.createElement("option");
+            option.value = dept;
+            option.textContent = dept;
+            dropdown.appendChild(option);
+        }
+    });
 })
 .catch(error => {
     console.error("Error fetching data:", error);
+    document.getElementById("departmentDropdown").innerHTML =
+        "<option>Error loading data</option>";
 });
 </script>
 
