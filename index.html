@@ -62,6 +62,7 @@ button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weigh
 <option>15 to 30 Years</option>
 <option>30 Years to 45 Years</option>
 <option>45 Years to 60 Years</option>
+<option>60 to 65 Years</option>
 <option>65 Years & above</option>
 </select>
 </div>
@@ -101,16 +102,20 @@ const csvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiuj
 let rawData=[];
 let chart;
 
-// Parse Date safely (handles DD/MM/YYYY)
+// Parse Date (DD/MM/YYYY or YYYY-MM-DD)
 function parseDate(value){
     if(!value) return null;
+    value=value.trim();
     if(value.includes("/")){
         let parts=value.split("/");
         if(parts[2].length===4){
-            return new Date(parts[2],parts[1]-1,parts[0]);
+            return new Date(parts[2], parts[1]-1, parts[0]);
         }
     }
-    return new Date(value);
+    if(value.includes("-")){
+        return new Date(value);
+    }
+    return null;
 }
 
 // Normalize gender values
@@ -122,7 +127,7 @@ function normalizeGender(g){
     return g;
 }
 
-// Convert Age text → Years decimal
+// Convert Age text → decimal years
 function parseAge(ageText){
     if(!ageText) return 0;
     ageText=ageText.toLowerCase();
@@ -136,26 +141,14 @@ function parseAge(ageText){
     if(m) months=parseInt(m[1]);
     if(d) days=parseInt(d[1]);
 
-    return years+(months/12)+(days/365);
+    return years + (months/12) + (days/365);
 }
 
-Papa.parse(csvUrl,{
-    download:true,
-    skipEmptyLines:true,
-    complete:function(results){
-        rawData=results.data.slice(1);
-        populateDropdown(8,"department");
-        populateDropdown(21,"district");
-        populateDropdown(20,"diagnosis");
-        populateDropdown(6,"gender",true);
-        applyFilters();
-    }
-});
-
+// Populate dropdowns dynamically
 function populateDropdown(index,id,isGender=false){
     const dropdown=document.getElementById(id);
     dropdown.innerHTML="<option value=''>All</option>";
-    let values=rawData.map(r=>r[index]).filter(v=>v);
+    let values=rawData.map(r=>r[index]).filter(v=>v && v.trim()!=="");
     if(isGender) values=values.map(v=>normalizeGender(v));
     const unique=[...new Set(values)];
     unique.sort().forEach(val=>{
@@ -163,51 +156,51 @@ function populateDropdown(index,id,isGender=false){
     });
 }
 
-document.querySelectorAll("select,input").forEach(el=>{
-    el.addEventListener("change",applyFilters);
-});
-
+// Check if age fits selected group
 function ageMatch(age,group){
     if(!group) return true;
-    if(group==="Below 30 Days") return age<(30/365);
-    if(group==="1 Month to 1 Year") return age>=(1/12)&&age<1;
-    if(group==="1 Year to 15 Years") return age>=1&&age<=15;
-    if(group==="15 to 30 Years") return age>15&&age<=30;
-    if(group==="30 Years to 45 Years") return age>30&&age<=45;
-    if(group==="45 Years to 60 Years") return age>45&&age<=60;
-    if(group==="65 Years & above") return age>=65;
-    return true;
+    switch(group){
+        case "Below 30 Days": return age<(30/365);
+        case "1 Month to 1 Year": return age>=(1/12)&&age<1;
+        case "1 Year to 15 Years": return age>=1&&age<=15;
+        case "15 to 30 Years": return age>15&&age<=30;
+        case "30 Years to 45 Years": return age>30&&age<=45;
+        case "45 Years to 60 Years": return age>45&&age<=60;
+        case "60 to 65 Years": return age>60&&age<65;
+        case "65 Years & above": return age>=65;
+        default: return true;
+    }
 }
 
+// Apply all filters
 function applyFilters(){
-
     const from=document.getElementById("fromDate").value;
     const to=document.getElementById("toDate").value;
-    const dept=department.value;
-    const dist=district.value;
-    const diag=diagnosis.value;
+    const dept=document.getElementById("department").value;
+    const dist=document.getElementById("district").value;
+    const diag=document.getElementById("diagnosis").value;
     const gender=document.getElementById("gender").value;
     const ageGroup=document.getElementById("ageGroup").value;
 
-    let filtered=rawData.filter(r=>{
-
-        const deathDate=parseDate(r[17]);
+    const filtered=rawData.filter(r=>{
+        const deathDate=parseDate(r[17]); // Column R = 18th column (index 17)
         const rowGender=normalizeGender(r[6]);
         const age=parseAge(r[3]);
 
-        return (!from||deathDate>=new Date(from)) &&
-               (!to||deathDate<=new Date(to)) &&
-               (!dept||r[8]===dept) &&
-               (!dist||r[21]===dist) &&
-               (!diag||r[20]===diag) &&
-               (!gender||rowGender===gender) &&
-               ageMatch(age,ageGroup);
+        return (!from || (deathDate && deathDate >= new Date(from))) &&
+               (!to || (deathDate && deathDate <= new Date(to))) &&
+               (!dept || r[8]===dept) &&
+               (!dist || r[21]===dist) &&
+               (!diag || r[20]===diag) &&
+               (!gender || rowGender===gender) &&
+               ageMatch(age, ageGroup);
     });
 
     document.getElementById("totalDeaths").innerText=filtered.length;
     document.getElementById("maleDeaths").innerText=filtered.filter(r=>normalizeGender(r[6])==="Male").length;
     document.getElementById("femaleDeaths").innerText=filtered.filter(r=>normalizeGender(r[6])==="Female").length;
 
+    // Department-wise counts
     const deptCounts={};
     filtered.forEach(r=>{
         const d=r[8]||"Unknown";
@@ -221,6 +214,7 @@ function applyFilters(){
         data:{
             labels:Object.keys(deptCounts),
             datasets:[{
+                label:"Deaths",
                 data:Object.values(deptCounts),
                 backgroundColor:[
                     "#3498db","#e74c3c","#2ecc71","#9b59b6",
@@ -232,6 +226,7 @@ function applyFilters(){
     });
 }
 
+// Export PDF
 function exportPDF(){
     html2pdf().from(document.getElementById("dashboard")).set({
         margin:10,
@@ -241,7 +236,24 @@ function exportPDF(){
     }).save();
 }
 
-</script>
+// Load CSV and initialize
+Papa.parse(csvUrl,{
+    download:true,
+    skipEmptyLines:true,
+    header:true,
+    complete:function(results){
+        rawData=results.data;
+        populateDropdown(8,"department"); // Column I
+        populateDropdown(21,"district");  // Column V
+        populateDropdown(20,"diagnosis");// Column U
+        populateDropdown(6,"gender",true); // Column G
+        applyFilters();
+    }
+});
 
+// Event listeners
+document.querySelectorAll("select,input").forEach(el=>el.addEventListener("change",applyFilters));
+
+</script>
 </body>
 </html>
