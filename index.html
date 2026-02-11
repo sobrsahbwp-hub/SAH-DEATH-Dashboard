@@ -1,137 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sadiq Abbasi Hospital Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
 <style>
-    body {
-        margin: 0;
-        font-family: 'Segoe UI', Arial, sans-serif;
-        background: #f4f9ff;
-        color: #2c3e50;
-    }
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f9ff;
+    margin: 0;
+    padding: 0;
+    color: #1a2b4c;
+}
 
-    /* Header */
-    .header {
-        text-align: center;
-        padding: 25px;
-        background: linear-gradient(135deg, #e3f2fd, #ffffff);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
+.header {
+    text-align: center;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
 
-    .header img {
-        height: 85px;
-        margin-bottom: 10px;
-    }
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: #0077cc;
+}
 
-    .header h1 {
-        margin: 5px 0;
-        font-size: 28px;
-        color: #0d47a1;
-        letter-spacing: 1px;
-    }
+.subtitle {
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: #555;
+}
 
-    .header p {
-        margin: 0;
-        font-size: 14px;
-        color: #607d8b;
-    }
+.container {
+    padding: 30px;
+}
 
-    /* Container */
-    .container {
-        width: 95%;
-        max-width: 1200px;
-        margin: 30px auto;
-    }
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+}
 
-    /* Card */
-    .card {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.07);
-        margin-bottom: 25px;
-    }
+.filters div {
+    display: flex;
+    flex-direction: column;
+}
 
-    select {
-        width: 100%;
-        padding: 12px;
-        border-radius: 8px;
-        border: 1px solid #cfd8dc;
-        font-size: 15px;
-        margin-top: 8px;
-    }
+input, select {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
 
-    select:focus {
-        border-color: #1976d2;
-        outline: none;
-        box-shadow: 0 0 6px rgba(25,118,210,0.3);
-    }
+.kpi-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 119, 204, 0.1);
+    text-align: center;
+    max-width: 300px;
+}
 
-    /* KPI */
-    .kpi-container {
-        display: flex;
-        justify-content: center;
-    }
+.kpi-title {
+    font-size: 16px;
+    color: #666;
+}
 
-    .kpi-card {
-        background: #ffffff;
-        padding: 30px 40px;
-        border-radius: 15px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        text-align: center;
-        border-top: 6px solid #d32f2f;
-        min-width: 280px;
-    }
+.kpi-value {
+    font-size: 42px;
+    font-weight: bold;
+    color: #d32f2f;
+    margin-top: 10px;
+}
 
-    .kpi-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #546e7a;
-        margin-bottom: 10px;
-    }
+button {
+    padding: 10px 20px;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
 
-    .kpi-value {
-        font-size: 48px;
-        font-weight: bold;
-        color: #d32f2f;
-    }
-
-    footer {
-        text-align: center;
-        padding: 15px;
-        font-size: 13px;
-        color: #78909c;
-        margin-top: 30px;
-    }
-
-    @media(max-width:600px){
-        .kpi-value{
-            font-size: 36px;
-        }
-    }
+button:hover {
+    background: #005fa3;
+}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
-    <!-- Replace with actual hospital monogram -->
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/HD_transparent_picture.png" alt="Hospital Monogram">
-    <h1>SADIQ ABBASI HOSPITAL, BAHAWALPUR</h1>
-    <p>Hi-Tech Mortality Monitoring Dashboard</p>
+    <div class="logo">🏥 SADIQ ABBASI HOSPITAL</div>
+    <div class="subtitle">BAHAWALPUR</div>
 </div>
 
 <div class="container">
 
-    <!-- WARD DROPDOWN -->
-    <div class="card">
-        <label><strong>Select Ward:</strong></label>
-        <select>
-            <option value="">-- Select Ward --</option>
+<div class="filters">
+    <div>
+        <label>From Date</label>
+        <input type="date" id="fromDate">
+    </div>
+
+    <div>
+        <label>To Date</label>
+        <input type="date" id="toDate">
+    </div>
+
+    <div>
+        <label>Department</label>
+        <select id="department">
+            <option value="">All Departments</option>
             <option>GYNAE WARD</option>
             <option>PEADS WARD</option>
             <option>PEADS EMERGENCY WARD</option>
@@ -152,52 +136,54 @@
         </select>
     </div>
 
-    <!-- KPI TOTAL DEATHS -->
-    <div class="kpi-container">
-        <div class="kpi-card">
-            <div class="kpi-title">TOTAL DEATHS (All Wards)</div>
-            <div class="kpi-value" id="totalDeaths">Loading...</div>
-        </div>
+    <div style="align-self: flex-end;">
+        <button onclick="loadData()">Generate KPI</button>
     </div>
-
 </div>
 
-<footer>
-    © 2026 Sadiq Abbasi Hospital Bahawalpur | Integrated Digital Health System
-</footer>
+<div class="kpi-card">
+    <div class="kpi-title">TOTAL DEATHS</div>
+    <div class="kpi-value" id="deathCount">0</div>
+</div>
+
+</div>
 
 <script>
 
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
 
-fetch(sheetURL)
-.then(res => res.text())
-.then(data => {
+function loadData() {
+    const fromDate = new Date(document.getElementById("fromDate").value);
+    const toDate = new Date(document.getElementById("toDate").value);
+    const department = document.getElementById("department").value;
 
-    const rows = data.split("\n");
-    const headers = rows[0].split(",");
+    Papa.parse(sheetURL, {
+        download: true,
+        header: true,
+        complete: function(results) {
+            let data = results.data;
+            let deathCount = 0;
 
-    // Find column named "DEAPRTMENT" (as requested)
-    const deptIndex = headers.findIndex(h =>
-        h.trim().toUpperCase() === "DEAPRTMENT"
-    );
+            data.forEach(row => {
 
-    let totalDeaths = 0;
+                let rowDate = new Date(row.DATE);  // Column name must be DATE
+                let rowDept = row.DEPARTMENT;      // Column name must be DEPARTMENT
+                let deathStatus = row.STATUS;      // Column that marks death (e.g., "DEATH")
 
-    rows.slice(1).forEach(row => {
-        const cols = row.split(",");
-        if(cols[deptIndex] && cols[deptIndex].trim() !== "") {
-            totalDeaths++;   // counting all records in DEAPRTMENT column
+                if (
+                    (!isNaN(rowDate)) &&
+                    (fromDate <= rowDate && rowDate <= toDate) &&
+                    (department === "" || rowDept === department) &&
+                    (deathStatus && deathStatus.toUpperCase() === "DEATH")
+                ) {
+                    deathCount++;
+                }
+            });
+
+            document.getElementById("deathCount").innerText = deathCount;
         }
     });
-
-    document.getElementById("totalDeaths").innerText = totalDeaths;
-
-})
-.catch(error => {
-    document.getElementById("totalDeaths").innerText = "Error";
-    console.error("Error loading sheet:", error);
-});
+}
 
 </script>
 
