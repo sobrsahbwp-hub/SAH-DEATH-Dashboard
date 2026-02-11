@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
-body{font-family:Segoe UI;margin:0;background:#f2f6fa;}
+body{font-family:Segoe UI;margin:0;background:#f4f7fb;}
 .header{text-align:center;padding:20px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.08);}
 .header img{height:80px;}
 .container{padding:20px;}
@@ -46,37 +46,12 @@ button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weigh
 <div class="container">
 
 <div class="filters">
-
-<div class="filter-box">
-<label>From Date</label>
-<input type="date" id="fromDate">
-</div>
-
-<div class="filter-box">
-<label>To Date</label>
-<input type="date" id="toDate">
-</div>
-
-<div class="filter-box">
-<label>DEPARTMENT</label>
-<select id="department"></select>
-</div>
-
-<div class="filter-box">
-<label>DISTRICT</label>
-<select id="district"></select>
-</div>
-
-<div class="filter-box">
-<label>DIAGNOSIS</label>
-<select id="diagnosis"></select>
-</div>
-
-<div class="filter-box">
-<label>GENDER</label>
-<select id="gender"></select>
-</div>
-
+<div class="filter-box"><label>From Date</label><input type="date" id="fromDate"></div>
+<div class="filter-box"><label>To Date</label><input type="date" id="toDate"></div>
+<div class="filter-box"><label>DEPARTMENT</label><select id="department"></select></div>
+<div class="filter-box"><label>DISTRICT</label><select id="district"></select></div>
+<div class="filter-box"><label>DIAGNOSIS</label><select id="diagnosis"></select></div>
+<div class="filter-box"><label>GENDER</label><select id="gender"></select></div>
 <div class="filter-box">
 <label>AGE GROUP</label>
 <select id="ageGroup">
@@ -90,7 +65,6 @@ button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weigh
 <option>65 Years & above</option>
 </select>
 </div>
-
 </div>
 
 <div class="kpis">
@@ -127,22 +101,42 @@ const csvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiuj
 let rawData=[];
 let chart;
 
-// Robust Age Parser (Years + Months + Days → Years Decimal)
-function parseAgeToYears(ageText){
+// Parse Date safely (handles DD/MM/YYYY)
+function parseDate(value){
+    if(!value) return null;
+    if(value.includes("/")){
+        let parts=value.split("/");
+        if(parts[2].length===4){
+            return new Date(parts[2],parts[1]-1,parts[0]);
+        }
+    }
+    return new Date(value);
+}
+
+// Normalize gender values
+function normalizeGender(g){
+    if(!g) return "";
+    g=g.trim().toLowerCase();
+    if(g==="m"||g==="male") return "Male";
+    if(g==="f"||g==="female") return "Female";
+    return g;
+}
+
+// Convert Age text → Years decimal
+function parseAge(ageText){
     if(!ageText) return 0;
     ageText=ageText.toLowerCase();
+    let years=0,months=0,days=0;
 
-    let years=0, months=0, days=0;
+    let y=ageText.match(/(\d+)\s*year/);
+    let m=ageText.match(/(\d+)\s*month/);
+    let d=ageText.match(/(\d+)\s*day/);
 
-    let yMatch=ageText.match(/(\d+)\s*year/);
-    let mMatch=ageText.match(/(\d+)\s*month/);
-    let dMatch=ageText.match(/(\d+)\s*day/);
+    if(y) years=parseInt(y[1]);
+    if(m) months=parseInt(m[1]);
+    if(d) days=parseInt(d[1]);
 
-    if(yMatch) years=parseInt(yMatch[1]);
-    if(mMatch) months=parseInt(mMatch[1]);
-    if(dMatch) days=parseInt(dMatch[1]);
-
-    return years + (months/12) + (days/365);
+    return years+(months/12)+(days/365);
 }
 
 Papa.parse(csvUrl,{
@@ -153,15 +147,17 @@ Papa.parse(csvUrl,{
         populateDropdown(8,"department");
         populateDropdown(21,"district");
         populateDropdown(20,"diagnosis");
-        populateDropdown(6,"gender");
+        populateDropdown(6,"gender",true);
         applyFilters();
     }
 });
 
-function populateDropdown(index,id){
+function populateDropdown(index,id,isGender=false){
     const dropdown=document.getElementById(id);
     dropdown.innerHTML="<option value=''>All</option>";
-    const unique=[...new Set(rawData.map(r=>r[index]).filter(v=>v))];
+    let values=rawData.map(r=>r[index]).filter(v=>v);
+    if(isGender) values=values.map(v=>normalizeGender(v));
+    const unique=[...new Set(values)];
     unique.sort().forEach(val=>{
         dropdown.innerHTML+=`<option value="${val}">${val}</option>`;
     });
@@ -171,10 +167,8 @@ document.querySelectorAll("select,input").forEach(el=>{
     el.addEventListener("change",applyFilters);
 });
 
-function ageMatch(ageValue,group){
-    const age=parseAgeToYears(ageValue);
+function ageMatch(age,group){
     if(!group) return true;
-
     if(group==="Below 30 Days") return age<(30/365);
     if(group==="1 Month to 1 Year") return age>=(1/12)&&age<1;
     if(group==="1 Year to 15 Years") return age>=1&&age<=15;
@@ -197,20 +191,22 @@ function applyFilters(){
 
     let filtered=rawData.filter(r=>{
 
-        const deathDate=new Date(r[17]); // Column R
+        const deathDate=parseDate(r[17]);
+        const rowGender=normalizeGender(r[6]);
+        const age=parseAge(r[3]);
 
         return (!from||deathDate>=new Date(from)) &&
                (!to||deathDate<=new Date(to)) &&
                (!dept||r[8]===dept) &&
                (!dist||r[21]===dist) &&
                (!diag||r[20]===diag) &&
-               (!gender||r[6]===gender) &&
-               ageMatch(r[3],ageGroup);
+               (!gender||rowGender===gender) &&
+               ageMatch(age,ageGroup);
     });
 
     document.getElementById("totalDeaths").innerText=filtered.length;
-    document.getElementById("maleDeaths").innerText=filtered.filter(r=>r[6]==="Male").length;
-    document.getElementById("femaleDeaths").innerText=filtered.filter(r=>r[6]==="Female").length;
+    document.getElementById("maleDeaths").innerText=filtered.filter(r=>normalizeGender(r[6])==="Male").length;
+    document.getElementById("femaleDeaths").innerText=filtered.filter(r=>normalizeGender(r[6])==="Female").length;
 
     const deptCounts={};
     filtered.forEach(r=>{
@@ -232,10 +228,7 @@ function applyFilters(){
                 ]
             }]
         },
-        options:{
-            responsive:true,
-            plugins:{legend:{display:false}}
-        }
+        options:{responsive:true,plugins:{legend:{display:false}}}
     });
 }
 
