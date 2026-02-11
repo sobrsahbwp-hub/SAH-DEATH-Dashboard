@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sadiq Abbasi Hospital Dashboard</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f8fc;
+    color: #1e2a38;
+}
+
+.header {
+    text-align: center;
+    padding: 25px 10px;
+    background: linear-gradient(90deg, #e6f2ff, #ffffff);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    color: #0077cc;
+}
+
+.container {
+    padding: 30px;
+}
+
+.filter-box {
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    background: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    font-size: 13px;
+}
+
+th {
+    background: #0077cc;
+    color: white;
+}
+
+tr:hover {
+    background: #f1f7ff;
+}
+
+.footer {
+    text-align: center;
+    padding: 15px;
+    font-size: 12px;
+    color: gray;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>🏥 SADIQ ABBASI HOSPITAL, BAHAWALPUR</h1>
+</div>
+
+<div class="container">
+
+    <div class="filter-box">
+        <label for="departmentSelect">DEPARTMENT:</label>
+        <select id="departmentSelect">
+            <option value="All">All Departments</option>
+        </select>
+    </div>
+
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>DEPARTMENT</th>
+                <th>AGE</th>
+                <th>GENDER</th>
+                <th>DATE OF DEATH</th>
+                <th>SOURCE</th>
+                <th>DIAGNOSIS</th>
+                <th>DISTRICT</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+<div class="footer">
+    Hi-Tech Hospital Dashboard | Live Data Integration
+</div>
+
+<script>
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+
+let fullData = [];
+
+fetch(csvUrl)
+.then(response => response.text())
+.then(data => {
+    const rows = data.split("\n").map(row => row.split(","));
+    const headers = rows[0];
+    
+    const deptIndex = headers.indexOf("DEPARTMENT");
+    
+    fullData = rows.slice(1).map(row => ({
+        DEPARTMENT: row[headers.indexOf("DEPARTMENT")],
+        AGE: row[headers.indexOf("AGE")],
+        GENDER: row[headers.indexOf("GENDER")],
+        DATEOFDEATH: row[headers.indexOf("DATEOFDEATH")],
+        SOURCE: row[headers.indexOf("SOURCE")],
+        DIAGNOSIS: row[headers.indexOf("DIAGNOSIS")],
+        DISTRICT: row[headers.indexOf("DISTRICT")]
+    }));
+
+    populateDepartments();
+    renderTable(fullData);
+});
+
+function populateDepartments() {
+    const select = document.getElementById("departmentSelect");
+    const departments = [...new Set(fullData.map(item => item.DEPARTMENT))].filter(Boolean);
+
+    departments.sort().forEach(dept => {
+        const option = document.createElement("option");
+        option.value = dept;
+        option.textContent = dept;
+        select.appendChild(option);
+    });
+}
+
+document.getElementById("departmentSelect").addEventListener("change", function() {
+    const selected = this.value;
+    if (selected === "All") {
+        renderTable(fullData);
+    } else {
+        const filtered = fullData.filter(item => item.DEPARTMENT === selected);
+        renderTable(filtered);
+    }
+});
+
+function renderTable(data) {
+    const tbody = document.querySelector("#dataTable tbody");
+    tbody.innerHTML = "";
+
+    data.forEach(item => {
+        const row = `
+            <tr>
+                <td>${item.DEPARTMENT || ""}</td>
+                <td>${item.AGE || ""}</td>
+                <td>${item.GENDER || ""}</td>
+                <td>${item.DATEOFDEATH || ""}</td>
+                <td>${item.SOURCE || ""}</td>
+                <td>${item.DIAGNOSIS || ""}</td>
+                <td>${item.DISTRICT || ""}</td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+</script>
+
+</body>
+</html>
