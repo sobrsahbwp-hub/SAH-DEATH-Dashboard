@@ -20,12 +20,8 @@ body{
     padding:15px;
     box-shadow:0 3px 10px rgba(0,0,0,0.08);
 }
-.header img{height:85px;}
-.header h1{
-    margin:5px;
-    color:#0a4fa3;
-    letter-spacing:2px;
-}
+.header img{height:80px;}
+.header h1{margin:5px;color:#0a4fa3;letter-spacing:2px;}
 .header h3{margin:0;font-weight:400;}
 
 .container{padding:20px;}
@@ -36,15 +32,9 @@ body{
     gap:15px;
     margin-bottom:25px;
 }
-.filter-box{
-    display:flex;
-    flex-direction:column;
-}
-.filter-box label{
-    font-size:13px;
-    margin-bottom:6px;
-    font-weight:600;
-}
+.filter-box{display:flex;flex-direction:column;}
+.filter-box label{font-size:13px;margin-bottom:6px;font-weight:600;}
+
 select,input{
     padding:8px;
     border-radius:6px;
@@ -80,6 +70,7 @@ select,input{
     justify-content:space-between;
     padding:15px 25px;
 }
+
 button{
     padding:8px 18px;
     border:none;
@@ -88,6 +79,7 @@ button{
     color:white;
     cursor:pointer;
 }
+
 button:hover{background:#083a7a;}
 
 .footer{
@@ -96,6 +88,7 @@ button:hover{background:#083a7a;}
     background:white;
     font-size:14px;
 }
+
 .footer a{
     color:#0a4fa3;
     text-decoration:none;
@@ -121,7 +114,6 @@ button:hover{background:#083a7a;}
 
 <div class="container">
 
-<!-- FILTERS -->
 <div class="filters">
 
 <div class="filter-box">
@@ -136,9 +128,7 @@ button:hover{background:#083a7a;}
 
 <div class="filter-box">
 <label>District</label>
-<select id="district">
-<option value="">All Districts</option>
-</select>
+<select id="district"><option value="">All Districts</option></select>
 </div>
 
 <div class="filter-box">
@@ -191,21 +181,14 @@ button:hover{background:#083a7a;}
 
 </div>
 
-<!-- KPI -->
 <div class="kpi-section">
 <div class="kpi"><h4>Total Deaths</h4><h2 id="totalDeaths">0</h2></div>
 <div class="kpi"><h4>Total Male Deaths</h4><h2 id="maleDeaths">0</h2></div>
 <div class="kpi"><h4>Total Female Deaths</h4><h2 id="femaleDeaths">0</h2></div>
 </div>
 
-<!-- CHARTS -->
-<div class="chart-container">
-<canvas id="departmentChart"></canvas>
-</div>
-
-<div class="chart-container">
-<canvas id="wardChart"></canvas>
-</div>
+<div class="chart-container"><canvas id="departmentChart"></canvas></div>
+<div class="chart-container"><canvas id="wardChart"></canvas></div>
 
 </div>
 
@@ -226,18 +209,19 @@ Software Engineer MUHAMMAD UMAIR SYED
 
 <script>
 
-const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
 
-let rawData=[], deptChart, wardChart;
+let rawData = [];
+let deptChart, wardChart;
 
 /* Robust CSV Parser */
 function parseCSV(text){
-const rows=text.trim().split("\n").map(r=>r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
-const headers=rows.shift();
+const rows = text.trim().split("\n").map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+const headers = rows.shift().map(h => h.trim().toLowerCase());
 return rows.map(row=>{
-let obj={};
+let obj = {};
 headers.forEach((h,i)=>{
-obj[h.trim()]=row[i]?.replace(/"/g,"").trim();
+obj[h] = row[i] ? row[i].replace(/"/g,"").trim() : "";
 });
 return obj;
 });
@@ -246,18 +230,18 @@ return obj;
 fetch(sheetURL)
 .then(res=>res.text())
 .then(text=>{
-rawData=parseCSV(text);
+rawData = parseCSV(text);
 populateDistrict();
 updateDashboard();
 });
 
-/* Populate District Dropdown */
+/* Populate District */
 function populateDistrict(){
-let set=new Set();
+let set = new Set();
 rawData.forEach(r=>{
-if(r["District"]) set.add(r["District"]);
+if(r["district"]) set.add(r["district"]);
 });
-let dropdown=document.getElementById("district");
+let dropdown = document.getElementById("district");
 set.forEach(d=>{
 let opt=document.createElement("option");
 opt.value=d;
@@ -266,12 +250,12 @@ dropdown.appendChild(opt);
 });
 }
 
-/* Age Group Logic */
+/* Age Matching */
 function ageMatch(age,group){
 let a=parseFloat(age)||0;
 switch(group){
-case "Below 30 Days": return a<0.1;
-case "1 Month to 1 Year": return a>=0.1 && a<1;
+case "Below 30 Days": return a < 0.1;
+case "1 Month to 1 Year": return a >=0.1 && a <1;
 case "1 Year to 15 Years": return a>=1 && a<=15;
 case "15 to 30 Years": return a>15 && a<=30;
 case "30 Years to 45 Years": return a>30 && a<=45;
@@ -281,8 +265,8 @@ default:return true;
 }
 }
 
-/* Combined Filtering */
-function getFilteredData(){
+/* Combined Filter */
+function getFiltered(){
 let from=document.getElementById("fromDate").value;
 let to=document.getElementById("toDate").value;
 let district=document.getElementById("district").value;
@@ -292,15 +276,16 @@ let ageGroup=document.getElementById("ageGroup").value;
 
 return rawData.filter(r=>{
 
-if(!r["Death"] || parseInt(r["Death"])<=0) return false;
+if(!r["death"] || parseInt(r["death"])<=0) return false;
 
-if(from && new Date(r["Date"])<new Date(from)) return false;
-if(to && new Date(r["Date"])>new Date(to)) return false;
+let recordDate = new Date(r["date"]);
+if(from && recordDate < new Date(from)) return false;
+if(to && recordDate > new Date(to)) return false;
 
-if(district && r["District"]!==district) return false;
-if(ward!=="ALL WARDS" && r["Ward"]!==ward) return false;
-if(gender!=="ALL GENDERS" && r["Gender"]!==gender) return false;
-if(ageGroup!=="ALL AGES" && !ageMatch(r["Age"],ageGroup)) return false;
+if(district && r["district"]!==district) return false;
+if(ward!=="ALL WARDS" && r["ward"]!==ward) return false;
+if(gender!=="ALL GENDERS" && r["gender"]!==gender) return false;
+if(ageGroup!=="ALL AGES" && !ageMatch(r["age"],ageGroup)) return false;
 
 return true;
 });
@@ -309,23 +294,22 @@ return true;
 document.querySelectorAll("select,input").forEach(el=>el.addEventListener("change",updateDashboard));
 
 function updateDashboard(){
-let filtered=getFilteredData();
+let filtered=getFiltered();
 
 document.getElementById("totalDeaths").innerText=filtered.length;
-document.getElementById("maleDeaths").innerText=filtered.filter(r=>r["Gender"]==="MALE").length;
-document.getElementById("femaleDeaths").innerText=filtered.filter(r=>r["Gender"]==="FEMALE").length;
+document.getElementById("maleDeaths").innerText=filtered.filter(r=>r["gender"]==="MALE").length;
+document.getElementById("femaleDeaths").innerText=filtered.filter(r=>r["gender"]==="FEMALE").length;
 
 drawCharts(filtered);
 }
 
-/* Charts */
 function drawCharts(data){
 
 let deptCounts={}, wardCounts={};
 
 data.forEach(r=>{
-deptCounts[r["Department"]] = (deptCounts[r["Department"]]||0)+1;
-wardCounts[r["Ward"]] = (wardCounts[r["Ward"]]||0)+1;
+deptCounts[r["department"]] = (deptCounts[r["department"]]||0)+1;
+wardCounts[r["ward"]] = (wardCounts[r["ward"]]||0)+1;
 });
 
 if(deptChart) deptChart.destroy();
@@ -333,36 +317,22 @@ if(wardChart) wardChart.destroy();
 
 deptChart=new Chart(document.getElementById("departmentChart"),{
 type:"bar",
-data:{
-labels:Object.keys(deptCounts),
-datasets:[{
-data:Object.values(deptCounts),
-backgroundColor:["#3498db","#1abc9c","#9b59b6","#e67e22","#e74c3c","#2ecc71"]
-}]
-},
-options:{
-plugins:{legend:{display:false}},
-responsive:true
-}
+data:{labels:Object.keys(deptCounts),
+datasets:[{data:Object.values(deptCounts),
+backgroundColor:["#3498db","#1abc9c","#9b59b6","#e67e22","#e74c3c","#2ecc71"]}]},
+options:{plugins:{legend:{display:false}},responsive:true}
 });
 
 wardChart=new Chart(document.getElementById("wardChart"),{
 type:"bar",
-data:{
-labels:Object.keys(wardCounts),
-datasets:[{
-data:Object.values(wardCounts),
-backgroundColor:["#f1c40f","#16a085","#8e44ad","#d35400","#c0392b"]
-}]
-},
-options:{
-plugins:{legend:{display:false}},
-responsive:true
-}
+data:{labels:Object.keys(wardCounts),
+datasets:[{data:Object.values(wardCounts),
+backgroundColor:["#f1c40f","#16a085","#8e44ad","#d35400","#c0392b"]}]},
+options:{plugins:{legend:{display:false}},responsive:true}
 });
 }
 
-/* PDF Export */
+/* PDF */
 async function exportPDF(){
 const { jsPDF }=window.jspdf;
 let canvas=await html2canvas(document.querySelector("#dashboard"));
@@ -371,7 +341,7 @@ let pdf=new jsPDF("p","mm","a4");
 let width=210;
 let height=canvas.height*width/canvas.width;
 pdf.addImage(img,"PNG",0,0,width,height);
-pdf.save("DEATH_DATA_DASHBOARD_SAH.pdf");
+pdf.save("DEATH_DATA_DASHBOARD.pdf");
 }
 
 </script>
