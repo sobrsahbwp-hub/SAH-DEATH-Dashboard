@@ -16,9 +16,9 @@
     /* Header */
     .header {
         text-align: center;
-        padding: 25px 10px;
+        padding: 25px;
         background: linear-gradient(135deg, #e3f2fd, #ffffff);
-        box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     .header img {
@@ -35,23 +35,23 @@
 
     .header p {
         margin: 0;
-        color: #607d8b;
         font-size: 14px;
+        color: #607d8b;
     }
 
     /* Container */
     .container {
         width: 95%;
-        max-width: 1300px;
+        max-width: 1200px;
         margin: 30px auto;
     }
 
-    /* Dropdown Card */
+    /* Card */
     .card {
         background: #ffffff;
         padding: 20px;
         border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.07);
         margin-bottom: 25px;
     }
 
@@ -70,38 +70,33 @@
         box-shadow: 0 0 6px rgba(25,118,210,0.3);
     }
 
-    /* KPI Grid */
-    .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
+    /* KPI */
+    .kpi-container {
+        display: flex;
+        justify-content: center;
     }
 
     .kpi-card {
         background: #ffffff;
-        padding: 20px;
-        border-radius: 10px;
+        padding: 30px 40px;
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
         text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        border-top: 4px solid #1976d2;
-        transition: 0.3s;
-    }
-
-    .kpi-card:hover {
-        transform: translateY(-4px);
+        border-top: 6px solid #d32f2f;
+        min-width: 280px;
     }
 
     .kpi-title {
-        font-size: 13px;
+        font-size: 16px;
         font-weight: 600;
         color: #546e7a;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
     }
 
     .kpi-value {
-        font-size: 28px;
+        font-size: 48px;
         font-weight: bold;
-        color: #0d47a1;
+        color: #d32f2f;
     }
 
     footer {
@@ -111,24 +106,31 @@
         color: #78909c;
         margin-top: 30px;
     }
+
+    @media(max-width:600px){
+        .kpi-value{
+            font-size: 36px;
+        }
+    }
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
     <!-- Replace with actual hospital monogram -->
     <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/HD_transparent_picture.png" alt="Hospital Monogram">
     <h1>SADIQ ABBASI HOSPITAL, BAHAWALPUR</h1>
-    <p>Hi-Tech Live Ward Monitoring Dashboard</p>
+    <p>Hi-Tech Mortality Monitoring Dashboard</p>
 </div>
 
 <div class="container">
 
-    <!-- Ward Dropdown -->
+    <!-- WARD DROPDOWN -->
     <div class="card">
         <label><strong>Select Ward:</strong></label>
-        <select id="wardSelect">
+        <select>
             <option value="">-- Select Ward --</option>
             <option>GYNAE WARD</option>
             <option>PEADS WARD</option>
@@ -150,39 +152,23 @@
         </select>
     </div>
 
-    <!-- KPI Section -->
-    <div class="kpi-grid" id="kpiContainer">
+    <!-- KPI TOTAL DEATHS -->
+    <div class="kpi-container">
+        <div class="kpi-card">
+            <div class="kpi-title">TOTAL DEATHS (All Wards)</div>
+            <div class="kpi-value" id="totalDeaths">Loading...</div>
+        </div>
     </div>
 
 </div>
 
 <footer>
-    © 2026 Sadiq Abbasi Hospital Bahawalpur | Integrated Health Information System
+    © 2026 Sadiq Abbasi Hospital Bahawalpur | Integrated Digital Health System
 </footer>
 
 <script>
 
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
-
-const wards = [
-"GYNAE WARD",
-"PEADS WARD",
-"PEADS EMERGENCY WARD",
-"NICU EMERGENCY",
-"NURSERY (OUT-BORN) WARD",
-"PICU WARD",
-"NICU (IN-BORN) WARD",
-"SURGICAL WARD",
-"ORTHO WARD",
-"MEDICAL WARD",
-"PULMONOLOGY WARD",
-"MEDICAL/SURGICAL ICU WARD",
-"PRIVATE ROOM",
-"ENT WARD",
-"EYE WARD",
-"EMERGENCY WARD",
-"DENGUE WARD"
-];
 
 fetch(sheetURL)
 .then(res => res.text())
@@ -190,39 +176,27 @@ fetch(sheetURL)
 
     const rows = data.split("\n");
     const headers = rows[0].split(",");
-    const deptIndex = headers.findIndex(h => 
-        h.trim().toUpperCase() === "DEPARTMENT"
+
+    // Find column named "DEAPRTMENT" (as requested)
+    const deptIndex = headers.findIndex(h =>
+        h.trim().toUpperCase() === "DEAPRTMENT"
     );
 
-    let counts = {};
-    wards.forEach(w => counts[w] = 0);
+    let totalDeaths = 0;
 
     rows.slice(1).forEach(row => {
         const cols = row.split(",");
-        if(cols[deptIndex]) {
-            const dept = cols[deptIndex].trim();
-            if(counts.hasOwnProperty(dept)) {
-                counts[dept]++;
-            }
+        if(cols[deptIndex] && cols[deptIndex].trim() !== "") {
+            totalDeaths++;   // counting all records in DEAPRTMENT column
         }
     });
 
-    const container = document.getElementById("kpiContainer");
-    container.innerHTML = "";
-
-    wards.forEach(ward => {
-        const card = document.createElement("div");
-        card.className = "kpi-card";
-        card.innerHTML = `
-            <div class="kpi-title">${ward}</div>
-            <div class="kpi-value">${counts[ward]}</div>
-        `;
-        container.appendChild(card);
-    });
+    document.getElementById("totalDeaths").innerText = totalDeaths;
 
 })
-.catch(err => {
-    console.error("Error loading sheet:", err);
+.catch(error => {
+    document.getElementById("totalDeaths").innerText = "Error";
+    console.error("Error loading sheet:", error);
 });
 
 </script>
