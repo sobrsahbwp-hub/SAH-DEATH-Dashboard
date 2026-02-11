@@ -1,93 +1,132 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sadiq Abbasi Hospital Dashboard</title>
+<title>Sadiq Abbasi Hospital - Hi-Tech Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f4f8fb;
-    margin: 0;
+body{
+    font-family:'Segoe UI',sans-serif;
+    margin:0;
+    background:#f4f9ff;
+    color:#1a1a1a;
 }
-
-.header {
-    text-align: center;
-    padding: 20px;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+.header{
+    text-align:center;
+    padding:15px;
+    background:#ffffff;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
 }
-
-.header h1 {
-    margin: 5px;
-    font-size: 28px;
-    color: #0a4fa3;
-    letter-spacing: 2px;
+.header img{
+    height:80px;
 }
-
-.header h3 {
-    margin: 0;
-    font-weight: 400;
-    color: #555;
+.header h1{
+    margin:5px 0 0 0;
+    color:#0a4fa3;
+    letter-spacing:2px;
 }
-
-.container {
-    padding: 30px;
+.header h3{
+    margin:0;
+    font-weight:400;
 }
-
-.filters {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin-bottom: 30px;
+.container{
+    padding:20px;
 }
-
-select, input {
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 14px;
+.filters{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:15px;
+    margin-bottom:25px;
 }
-
-button {
-    background: #0a4fa3;
-    color: white;
-    border: none;
-    padding: 9px 18px;
-    border-radius: 6px;
-    cursor: pointer;
+.filter-box{
+    display:flex;
+    flex-direction:column;
 }
-
-button:hover {
-    background: #083a7a;
+.filter-box label{
+    font-size:13px;
+    margin-bottom:5px;
 }
-
-.kpi-card {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    text-align: center;
-    width: 300px;
+select,input{
+    padding:8px;
+    border-radius:6px;
+    border:1px solid #ccc;
 }
-
-.kpi-title {
-    font-size: 16px;
-    color: #777;
+.kpi-section{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    justify-content:center;
+    margin-bottom:30px;
 }
-
-.kpi-value {
-    font-size: 42px;
-    font-weight: bold;
-    color: #c62828;
-    margin-top: 10px;
+.kpi{
+    background:white;
+    padding:20px;
+    width:220px;
+    text-align:center;
+    border-radius:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+.kpi h4{
+    margin:0;
+    font-size:14px;
+    color:#777;
+}
+.kpi h2{
+    margin:10px 0 0 0;
+    font-size:32px;
+}
+.chart-container{
+    width:90%;
+    margin:30px auto;
+}
+.footer{
+    text-align:center;
+    padding:15px;
+    font-size:14px;
+    background:white;
+}
+.footer a{
+    text-decoration:none;
+    color:#0a4fa3;
+    font-weight:bold;
+}
+.buttons{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 20px;
+}
+button{
+    padding:8px 18px;
+    border:none;
+    border-radius:6px;
+    background:#0a4fa3;
+    color:white;
+    cursor:pointer;
+}
+button:hover{
+    background:#083a7a;
+}
+@media print{
+    body{
+        background:white;
+    }
+    .buttons{
+        display:none;
+    }
 }
 </style>
 </head>
 
 <body>
 
+<div id="dashboard">
+
 <div class="header">
+    <img src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hXU">
     <h1>SADIQ ABBASI HOSPITAL</h1>
     <h3>Bahawalpur</h3>
 </div>
@@ -95,115 +134,227 @@ button:hover {
 <div class="container">
 
 <div class="filters">
-    <label>From:
-        <input type="date" id="fromDate">
-    </label>
 
-    <label>To:
-        <input type="date" id="toDate">
-    </label>
-
-    <label>District:
-        <select id="districtDropdown">
-            <option value="">All Districts</option>
-        </select>
-    </label>
-
-    <label>Ward:
-        <select id="wardDropdown">
-            <option value="">All Wards</option>
-            <option>GYNAE WARD</option>
-            <option>PEADS WARD</option>
-            <option>PEADS EMERGENCY WARD</option>
-            <option>NICU EMERGENCY</option>
-            <option>NURSERY (OUT-BORN) WARD</option>
-            <option>PICU WARD</option>
-            <option>NICU (IN-BORN) WARD</option>
-            <option>SURGICAL WARD</option>
-            <option>ORTHO WARD</option>
-            <option>MEDICAL WARD</option>
-            <option>PULMONOLOGY WARD</option>
-            <option>MEDICAL/SURGICAL ICU WARD</option>
-            <option>PRIVATE ROOM</option>
-            <option>ENT WARD</option>
-            <option>EYE WARD</option>
-            <option>EMERGENCY WARD</option>
-            <option>DENGUE WARD</option>
-        </select>
-    </label>
-
-    <button onclick="applyFilters()">Apply</button>
+<div class="filter-box">
+<label>From Date</label>
+<input type="date" id="fromDate">
 </div>
 
-<div class="kpi-card">
-    <div class="kpi-title">TOTAL DEATHS</div>
-    <div class="kpi-value" id="totalDeaths">0</div>
+<div class="filter-box">
+<label>To Date</label>
+<input type="date" id="toDate">
+</div>
+
+<div class="filter-box">
+<label>District</label>
+<select id="district"><option value="">All Districts</option></select>
+</div>
+
+<div class="filter-box">
+<label>Ward</label>
+<select id="ward">
+<option>ALL WARDS</option>
+<option>GYNAE WARD</option>
+<option>PEADS WARD</option>
+<option>PEADS EMERGENCY WARD</option>
+<option>NICU EMERGENCY</option>
+<option>NURSERY (OUT-BORN) WARD</option>
+<option>PICU WARD</option>
+<option>NICU (IN-BORN) WARD</option>
+<option>SURGICAL WARD</option>
+<option>ORTHO WARD</option>
+<option>MEDICAL WARD</option>
+<option>PULMONOLOGY WARD</option>
+<option>MEDICAL/SURGICAL ICU WARD</option>
+<option>PRIVATE ROOM</option>
+<option>ENT WARD</option>
+<option>EYE WARD</option>
+<option>EMERGENCY WARD</option>
+<option>DENGUE WARD</option>
+</select>
+</div>
+
+<div class="filter-box">
+<label>Gender</label>
+<select id="gender">
+<option>ALL GENDERS</option>
+<option>MALE</option>
+<option>FEMALE</option>
+<option>TRANSGENDER</option>
+</select>
+</div>
+
+<div class="filter-box">
+<label>Age Group</label>
+<select id="ageGroup">
+<option>ALL AGES</option>
+<option>Below 30 Days</option>
+<option>1 Month to 1 Year</option>
+<option>1 Year to 15 Years</option>
+<option>15 to 30 Years</option>
+<option>30 Years to 45 Years</option>
+<option>45 Years to 60 Years</option>
+<option>65 Years & above</option>
+</select>
+</div>
+
+</div>
+
+<div class="kpi-section">
+<div class="kpi">
+<h4>Total Deaths</h4>
+<h2 id="totalDeaths">0</h2>
+</div>
+<div class="kpi">
+<h4>Total Male Deaths</h4>
+<h2 id="maleDeaths">0</h2>
+</div>
+<div class="kpi">
+<h4>Total Female Deaths</h4>
+<h2 id="femaleDeaths">0</h2>
+</div>
+</div>
+
+<div class="chart-container">
+<canvas id="wardChart"></canvas>
+</div>
+
+<div class="chart-container">
+<canvas id="otChart"></canvas>
+</div>
+
+</div>
+
+<div class="buttons">
+<button onclick="exportPDF()">Export to PDF</button>
+<button onclick="location.reload()">Reload</button>
+</div>
+
+<div class="footer">
+Developed By: 
+<a href="https://www.linkedin.com/in/smus79" target="_blank">
+Software Engineer MUHAMMAD UMAIR SYED
+</a> 
+(IT Officer, Sadiq Abbasi Hospital, Bahawalpur)
 </div>
 
 </div>
 
 <script>
 
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
 
-let sheetData = [];
+let data=[],wardChart,otChart;
 
 fetch(sheetURL)
-.then(response => response.text())
-.then(csv => {
-    const rows = csv.split("\n").map(r => r.split(","));
-    const headers = rows[0];
-
-    sheetData = rows.slice(1).map(row => {
-        let obj = {};
-        headers.forEach((h, i) => obj[h.trim()] = row[i]);
-        return obj;
-    });
-
-    populateDistricts();
+.then(res=>res.text())
+.then(csv=>{
+let rows=csv.split("\n").map(r=>r.split(","));
+let headers=rows[0];
+data=rows.slice(1).map(r=>{
+let obj={};
+headers.forEach((h,i)=>obj[h.trim()]=r[i]);
+return obj;
+});
+populateDistrict();
 });
 
-function populateDistricts() {
-    const districts = [...new Set(sheetData.map(r => r["District"]).filter(Boolean))];
-    const dropdown = document.getElementById("districtDropdown");
-
-    districts.forEach(d => {
-        const option = document.createElement("option");
-        option.value = d;
-        option.textContent = d;
-        dropdown.appendChild(option);
-    });
+function populateDistrict(){
+let districts=[...new Set(data.map(r=>r["District"]).filter(Boolean))];
+let dropdown=document.getElementById("district");
+districts.forEach(d=>{
+let opt=document.createElement("option");
+opt.text=d;
+dropdown.add(opt);
+});
 }
 
-function applyFilters() {
-    const fromDate = document.getElementById("fromDate").value;
-    const toDate = document.getElementById("toDate").value;
-    const district = document.getElementById("districtDropdown").value;
-    const ward = document.getElementById("wardDropdown").value;
+function filterData(){
+let from=document.getElementById("fromDate").value;
+let to=document.getElementById("toDate").value;
+let district=document.getElementById("district").value;
+let ward=document.getElementById("ward").value;
+let gender=document.getElementById("gender").value;
+let ageGroup=document.getElementById("ageGroup").value;
 
-    let filtered = sheetData;
+return data.filter(r=>{
+if(from && new Date(r["Date"])<new Date(from)) return false;
+if(to && new Date(r["Date"])>new Date(to)) return false;
+if(district && r["District"]!==district) return false;
+if(ward!=="ALL WARDS" && r["Ward"]!==ward) return false;
+if(gender!=="ALL GENDERS" && r["Gender"]!==gender) return false;
+return true;
+});
+}
 
-    if (fromDate) {
-        filtered = filtered.filter(r => new Date(r["Date"]) >= new Date(fromDate));
-    }
+document.querySelectorAll("select,input").forEach(el=>el.addEventListener("change",updateDashboard));
 
-    if (toDate) {
-        filtered = filtered.filter(r => new Date(r["Date"]) <= new Date(toDate));
-    }
+function updateDashboard(){
+let filtered=filterData();
 
-    if (district) {
-        filtered = filtered.filter(r => r["District"] === district);
-    }
+let total=filtered.length;
+let male=filtered.filter(r=>r["Gender"]==="MALE").length;
+let female=filtered.filter(r=>r["Gender"]==="FEMALE").length;
 
-    if (ward) {
-        filtered = filtered.filter(r => r["Ward"] === ward);
-    }
+document.getElementById("totalDeaths").innerText=total;
+document.getElementById("maleDeaths").innerText=male;
+document.getElementById("femaleDeaths").innerText=female;
 
-    const totalDeaths = filtered.filter(r => 
-        r["Death"] && r["Death"].toString().toLowerCase() === "yes"
-    ).length;
+drawCharts(filtered);
+}
 
-    document.getElementById("totalDeaths").textContent = totalDeaths;
+function drawCharts(filtered){
+
+let wardCounts={};
+let otCounts={};
+
+filtered.forEach(r=>{
+let w=r["Ward"];
+let ot=r["OT"];
+wardCounts[w]=(wardCounts[w]||0)+1;
+otCounts[ot]=(otCounts[ot]||0)+1;
+});
+
+if(wardChart) wardChart.destroy();
+if(otChart) otChart.destroy();
+
+wardChart=new Chart(document.getElementById("wardChart"),{
+type:'bar',
+data:{
+labels:Object.keys(wardCounts),
+datasets:[{
+label:'Ward Wise Deaths',
+data:Object.values(wardCounts),
+backgroundColor:['#1abc9c','#3498db','#9b59b6','#e67e22','#e74c3c','#2ecc71']
+}]
+},
+options:{responsive:true,plugins:{legend:{display:false}}}
+});
+
+otChart=new Chart(document.getElementById("otChart"),{
+type:'bar',
+data:{
+labels:Object.keys(otCounts),
+datasets:[{
+label:'OT Wise Deaths',
+data:Object.values(otCounts),
+backgroundColor:['#f1c40f','#16a085','#8e44ad','#d35400','#c0392b','#27ae60']
+}]
+},
+options:{responsive:true,plugins:{legend:{display:false}}}
+});
+}
+
+async function exportPDF(){
+const { jsPDF }=window.jspdf;
+let canvas=await html2canvas(document.querySelector("#dashboard"));
+let imgData=canvas.toDataURL("image/png");
+let pdf=new jsPDF('p','mm','a4');
+let imgWidth=210;
+let pageHeight=297;
+let imgHeight=canvas.height*imgWidth/canvas.width;
+pdf.addImage(imgData,'PNG',0,0,imgWidth,imgHeight);
+pdf.save("Hospital_Dashboard.pdf");
 }
 
 </script>
