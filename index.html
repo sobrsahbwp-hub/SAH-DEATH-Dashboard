@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>DEATH DATA DASHBOARD - SAH</title>
+<title>Hospital Mortality Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -10,94 +10,105 @@
 
 <style>
 body{
-    margin:0;
-    font-family:'Segoe UI',sans-serif;
-    background:#f4f8fc;
+font-family:Segoe UI;
+background:#f4f8fb;
+margin:0;
+padding:20px;
 }
-.header{
-    text-align:center;
-    background:white;
-    padding:15px;
-    box-shadow:0 3px 10px rgba(0,0,0,0.08);
-}
-.header img{height:80px;}
-.header h1{margin:5px;color:#0a4fa3;letter-spacing:2px;}
-.header h3{margin:0;font-weight:400;}
 
-.container{padding:20px;}
+.header{
+text-align:center;
+margin-bottom:20px;
+}
+
+.logo{
+height:90px;
+}
+
+h1{
+color:#003366;
+margin:10px 0;
+}
 
 .filters{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-    gap:15px;
-    margin-bottom:25px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+margin-bottom:20px;
 }
-.filter-box{display:flex;flex-direction:column;}
-.filter-box label{font-size:13px;margin-bottom:6px;font-weight:600;}
+
+.filter-group{
+display:flex;
+flex-direction:column;
+}
+
+label{
+font-weight:bold;
+margin-bottom:5px;
+}
 
 select,input{
-    padding:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
+padding:8px;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
-.kpi-section{
-    display:flex;
-    flex-wrap:wrap;
-    gap:20px;
-    justify-content:center;
-    margin-bottom:30px;
+.kpis{
+display:flex;
+flex-wrap:wrap;
+gap:20px;
+justify-content:center;
+margin-bottom:20px;
 }
+
 .kpi{
-    background:white;
-    width:220px;
-    padding:20px;
-    text-align:center;
-    border-radius:10px;
-    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+text-align:center;
+min-width:200px;
 }
-.kpi h4{margin:0;font-size:14px;color:#666;}
-.kpi h2{margin:10px 0 0 0;font-size:32px;}
 
-.chart-container{
-    width:90%;
-    max-width:900px;
-    margin:30px auto;
+.kpi h2{
+margin:0;
+color:#003366;
+}
+
+canvas{
+max-width:800px;
+margin:auto;
+display:block;
+background:white;
+padding:15px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.footer{
+margin-top:40px;
+text-align:center;
+font-size:14px;
 }
 
 .buttons{
-    display:flex;
-    justify-content:space-between;
-    padding:15px 25px;
+display:flex;
+justify-content:space-between;
+margin-top:20px;
 }
 
 button{
-    padding:8px 18px;
-    border:none;
-    border-radius:6px;
-    background:#0a4fa3;
-    color:white;
-    cursor:pointer;
-}
-
-button:hover{background:#083a7a;}
-
-.footer{
-    text-align:center;
-    padding:15px;
-    background:white;
-    font-size:14px;
-}
-
-.footer a{
-    color:#0a4fa3;
-    text-decoration:none;
-    font-weight:bold;
+padding:10px 20px;
+border:none;
+border-radius:8px;
+background:#003366;
+color:white;
+cursor:pointer;
 }
 
 @media print{
-    .buttons{display:none;}
-    body{background:white;}
+body{background:white;}
+button{display:none;}
 }
 </style>
 </head>
@@ -107,31 +118,30 @@ button:hover{background:#083a7a;}
 <div id="dashboard">
 
 <div class="header">
-<img src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hXU">
-<h1>SADIQ ABBASI HOSPITAL</h1>
-<h3>Bahawalpur</h3>
+<img class="logo"
+src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hXU">
+<h1>SADIQ ABBASI HOSPITAL, BAHAWALPUR</h1>
+<h3>Hospital Mortality Dashboard</h3>
 </div>
-
-<div class="container">
 
 <div class="filters">
 
-<div class="filter-box">
+<div class="filter-group">
 <label>From Date</label>
 <input type="date" id="fromDate">
 </div>
 
-<div class="filter-box">
+<div class="filter-group">
 <label>To Date</label>
 <input type="date" id="toDate">
 </div>
 
-<div class="filter-box">
+<div class="filter-group">
 <label>District</label>
-<select id="district"><option value="">All Districts</option></select>
+<select id="district"></select>
 </div>
 
-<div class="filter-box">
+<div class="filter-group">
 <label>Ward</label>
 <select id="ward">
 <option>ALL WARDS</option>
@@ -155,7 +165,7 @@ button:hover{background:#083a7a;}
 </select>
 </div>
 
-<div class="filter-box">
+<div class="filter-group">
 <label>Gender</label>
 <select id="gender">
 <option>ALL GENDERS</option>
@@ -165,10 +175,10 @@ button:hover{background:#083a7a;}
 </select>
 </div>
 
-<div class="filter-box">
+<div class="filter-group">
 <label>Age Group</label>
 <select id="ageGroup">
-<option>ALL AGES</option>
+<option>ALL</option>
 <option>Below 30 Days</option>
 <option>1 Month to 1 Year</option>
 <option>1 Year to 15 Years</option>
@@ -181,20 +191,26 @@ button:hover{background:#083a7a;}
 
 </div>
 
-<div class="kpi-section">
-<div class="kpi"><h4>Total Deaths</h4><h2 id="totalDeaths">0</h2></div>
-<div class="kpi"><h4>Total Male Deaths</h4><h2 id="maleDeaths">0</h2></div>
-<div class="kpi"><h4>Total Female Deaths</h4><h2 id="femaleDeaths">0</h2></div>
+<div class="kpis">
+<div class="kpi">
+<h2 id="totalDeaths">0</h2>
+Total Deaths
+</div>
+<div class="kpi">
+<h2 id="maleDeaths">0</h2>
+Male Deaths
+</div>
+<div class="kpi">
+<h2 id="femaleDeaths">0</h2>
+Female Deaths
+</div>
 </div>
 
-<div class="chart-container"><canvas id="departmentChart"></canvas></div>
-<div class="chart-container"><canvas id="wardChart"></canvas></div>
-
-</div>
+<canvas id="deptChart"></canvas>
 
 <div class="buttons">
 <button onclick="exportPDF()">Export to PDF</button>
-<button onclick="location.reload()">Reload</button>
+<button onclick="location.reload()">Refresh</button>
 </div>
 
 <div class="footer">
@@ -209,139 +225,128 @@ Software Engineer MUHAMMAD UMAIR SYED
 
 <script>
 
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+const csvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
 
-let rawData = [];
-let deptChart, wardChart;
+let rawData=[];
+let chart;
 
-/* Robust CSV Parser */
-function parseCSV(text){
-const rows = text.trim().split("\n").map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
-const headers = rows.shift().map(h => h.trim().toLowerCase());
-return rows.map(row=>{
-let obj = {};
-headers.forEach((h,i)=>{
-obj[h] = row[i] ? row[i].replace(/"/g,"").trim() : "";
-});
+fetch(csvUrl)
+.then(res=>res.text())
+.then(data=>{
+let rows=data.split("\n").map(r=>r.split(","));
+let headers=rows[0];
+rawData=rows.slice(1).map(r=>{
+let obj={};
+headers.forEach((h,i)=>obj[h.trim()]=r[i]);
 return obj;
 });
-}
-
-fetch(sheetURL)
-.then(res=>res.text())
-.then(text=>{
-rawData = parseCSV(text);
 populateDistrict();
-updateDashboard();
+applyFilters();
 });
 
-/* Populate District */
 function populateDistrict(){
-let set = new Set();
-rawData.forEach(r=>{
-if(r["district"]) set.add(r["district"]);
-});
-let dropdown = document.getElementById("district");
-set.forEach(d=>{
+let districts=[...new Set(rawData.map(r=>r["District"]))].filter(Boolean);
+let select=document.getElementById("district");
+select.innerHTML="<option>ALL DISTRICTS</option>";
+districts.forEach(d=>{
 let opt=document.createElement("option");
-opt.value=d;
-opt.textContent=d;
-dropdown.appendChild(opt);
+opt.text=d;
+select.add(opt);
 });
 }
 
-/* Age Matching */
-function ageMatch(age,group){
-let a=parseFloat(age)||0;
+document.querySelectorAll("select,input").forEach(el=>{
+el.addEventListener("change",applyFilters);
+});
+
+function ageCheck(age,group){
+age=parseFloat(age);
+if(!age) return false;
+
 switch(group){
-case "Below 30 Days": return a < 0.1;
-case "1 Month to 1 Year": return a >=0.1 && a <1;
-case "1 Year to 15 Years": return a>=1 && a<=15;
-case "15 to 30 Years": return a>15 && a<=30;
-case "30 Years to 45 Years": return a>30 && a<=45;
-case "45 Years to 60 Years": return a>45 && a<=60;
-case "65 Years & above": return a>=65;
+case "Below 30 Days": return age<1/12;
+case "1 Month to 1 Year": return age>=1/12 && age<1;
+case "1 Year to 15 Years": return age>=1 && age<=15;
+case "15 to 30 Years": return age>15 && age<=30;
+case "30 Years to 45 Years": return age>30 && age<=45;
+case "45 Years to 60 Years": return age>45 && age<=60;
+case "65 Years & above": return age>=65;
 default:return true;
 }
 }
 
-/* Combined Filter */
-function getFiltered(){
-let from=document.getElementById("fromDate").value;
-let to=document.getElementById("toDate").value;
+function applyFilters(){
+
+let from=new Date(document.getElementById("fromDate").value);
+let to=new Date(document.getElementById("toDate").value);
 let district=document.getElementById("district").value;
 let ward=document.getElementById("ward").value;
 let gender=document.getElementById("gender").value;
 let ageGroup=document.getElementById("ageGroup").value;
 
-return rawData.filter(r=>{
+let filtered=rawData.filter(r=>{
 
-if(!r["death"] || parseInt(r["death"])<=0) return false;
-
-let recordDate = new Date(r["date"]);
-if(from && recordDate < new Date(from)) return false;
-if(to && recordDate > new Date(to)) return false;
-
-if(district && r["district"]!==district) return false;
-if(ward!=="ALL WARDS" && r["ward"]!==ward) return false;
-if(gender!=="ALL GENDERS" && r["gender"]!==gender) return false;
-if(ageGroup!=="ALL AGES" && !ageMatch(r["age"],ageGroup)) return false;
+let date=new Date(r["Date"]);
+if(document.getElementById("fromDate").value && date<from) return false;
+if(document.getElementById("toDate").value && date>to) return false;
+if(district!="ALL DISTRICTS" && r["District"]!=district) return false;
+if(ward!="ALL WARDS" && r["Ward"]!=ward) return false;
+if(gender!="ALL GENDERS" && r["Gender"]!=gender) return false;
+if(ageGroup!="ALL" && !ageCheck(r["Age"],ageGroup)) return false;
 
 return true;
 });
-}
-
-document.querySelectorAll("select,input").forEach(el=>el.addEventListener("change",updateDashboard));
-
-function updateDashboard(){
-let filtered=getFiltered();
 
 document.getElementById("totalDeaths").innerText=filtered.length;
-document.getElementById("maleDeaths").innerText=filtered.filter(r=>r["gender"]==="MALE").length;
-document.getElementById("femaleDeaths").innerText=filtered.filter(r=>r["gender"]==="FEMALE").length;
+document.getElementById("maleDeaths").innerText=
+filtered.filter(r=>r["Gender"]=="MALE").length;
+document.getElementById("femaleDeaths").innerText=
+filtered.filter(r=>r["Gender"]=="FEMALE").length;
 
-drawCharts(filtered);
+let deptCount={};
+filtered.forEach(r=>{
+let d=r["Department"];
+deptCount[d]=(deptCount[d]||0)+1;
+});
+
+drawChart(deptCount);
 }
 
-function drawCharts(data){
+function drawChart(dataObj){
 
-let deptCounts={}, wardCounts={};
+if(chart) chart.destroy();
 
-data.forEach(r=>{
-deptCounts[r["department"]] = (deptCounts[r["department"]]||0)+1;
-wardCounts[r["ward"]] = (wardCounts[r["ward"]]||0)+1;
-});
-
-if(deptChart) deptChart.destroy();
-if(wardChart) wardChart.destroy();
-
-deptChart=new Chart(document.getElementById("departmentChart"),{
+chart=new Chart(document.getElementById("deptChart"),{
 type:"bar",
-data:{labels:Object.keys(deptCounts),
-datasets:[{data:Object.values(deptCounts),
-backgroundColor:["#3498db","#1abc9c","#9b59b6","#e67e22","#e74c3c","#2ecc71"]}]},
-options:{plugins:{legend:{display:false}},responsive:true}
-});
-
-wardChart=new Chart(document.getElementById("wardChart"),{
-type:"bar",
-data:{labels:Object.keys(wardCounts),
-datasets:[{data:Object.values(wardCounts),
-backgroundColor:["#f1c40f","#16a085","#8e44ad","#d35400","#c0392b"]}]},
-options:{plugins:{legend:{display:false}},responsive:true}
+data:{
+labels:Object.keys(dataObj),
+datasets:[{
+label:"Deaths",
+data:Object.values(dataObj),
+backgroundColor:[
+"#003366","#006699","#0099cc",
+"#33cccc","#66cccc","#99cccc",
+"#ff6666","#ff9966","#ffcc66"
+]
+}]
+},
+options:{
+responsive:true,
+plugins:{legend:{display:false}}
+}
 });
 }
 
-/* PDF */
-async function exportPDF(){
-const { jsPDF }=window.jspdf;
-let canvas=await html2canvas(document.querySelector("#dashboard"));
-let img=canvas.toDataURL("image/png");
+function exportPDF(){
+html2canvas(document.querySelector("#dashboard")).then(canvas=>{
+const img=canvas.toDataURL("image/png");
+const {jsPDF}=window.jspdf;
 let pdf=new jsPDF("p","mm","a4");
 let width=210;
 let height=canvas.height*width/canvas.width;
 pdf.addImage(img,"PNG",0,0,width,height);
-pdf.save("DEATH_DATA_DASHBOARD.pdf");
+pdf.save("Mortality-Dashboard.pdf");
+});
 }
 
 </script>
