@@ -2,368 +2,328 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Hospital Mortality Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sadiq Abbasi Hospital – Mortality Dashboard</title>
-
-<!-- CSS -->
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    margin: 0;
-    padding: 0;
-    color: #333;
-  }
-  header {
-    text-align: center;
-    padding: 20px;
-    background-color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  header img {
-    max-width: 150px;
-    height: auto;
-    display: block;
-    margin: 0 auto 10px auto;
-  }
-  header h1 {
-    margin: 0;
-    font-size: 24px;
-    color: #2c3e50;
-  }
-  .filters {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin: 20px;
-  }
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-    min-width: 150px;
-  }
-  .filter-group label {
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-  select, input[type="date"] {
-    padding: 5px 8px;
-    font-size: 14px;
-  }
-  .kpi-container {
-    display: flex;
-    justify-content: center;
-    gap: 50px;
-    margin: 20px;
-  }
-  .kpi {
-    background: #fff;
-    padding: 20px 30px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    min-width: 120px;
-  }
-  .kpi h2 {
-    margin: 0;
-    font-size: 28px;
-    color: #e74c3c;
-  }
-  .kpi p {
-    margin: 5px 0 0 0;
-    font-size: 14px;
-    color: #555;
-  }
-  .chart-container {
-    width: 90%;
-    max-width: 600px;
-    margin: 30px auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  }
-  .buttons {
-    display: flex;
-    justify-content: space-between;
-    margin: 20px 50px;
-  }
-  button {
-    padding: 10px 20px;
-    font-size: 14px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background-color: #3498db;
-    color: #fff;
-  }
-  button:hover {
-    background-color: #2980b9;
-  }
-  footer {
-    text-align: center;
-    padding: 15px;
-    font-size: 12px;
-    color: #777;
-  }
-  footer a {
-    color: #3498db;
-    text-decoration: none;
-  }
-
-  /* Responsive */
-  @media(max-width:768px){
-    .filters {
-      flex-direction: column;
-      align-items: center;
-    }
-    .buttons {
-      flex-direction: column;
-      gap: 10px;
-      margin: 20px;
-    }
-  }
-
-  /* Print A4 */
-  @media print {
-    body {
-      background: #fff;
-    }
-    .buttons, header img {
-      display: none;
-    }
-    .chart-container {
-      box-shadow: none;
-      border-radius: 0;
-    }
-  }
-</style>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- PapaParse for CSV -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<!-- jsPDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- html2pdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+body{
+    font-family: 'Segoe UI', sans-serif;
+    margin:0;
+    background:#f4f7fb;
+    color:#222;
+}
+.header{
+    text-align:center;
+    padding:20px;
+    background:#ffffff;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+}
+.header img{
+    height:80px;
+}
+.header h2{
+    margin:10px 0 0 0;
+    color:#0a3d62;
+}
+.container{
+    padding:20px;
+}
+.filters{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+}
+.filter-box{
+    display:flex;
+    flex-direction:column;
+}
+.filter-box label{
+    font-weight:600;
+    margin-bottom:5px;
+}
+select,input{
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+.kpis{
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    margin-bottom:20px;
+}
+.kpi{
+    flex:1;
+    min-width:200px;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+.kpi h3{
+    margin:0;
+    font-size:16px;
+}
+.kpi p{
+    font-size:28px;
+    margin:10px 0 0 0;
+    font-weight:bold;
+    color:#0a3d62;
+}
+.chart-container{
+    text-align:center;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+.footer{
+    text-align:center;
+    padding:15px;
+    margin-top:20px;
+    font-size:14px;
+}
+.buttons{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+}
+button{
+    padding:10px 20px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:600;
+}
+.pdf-btn{ background:#0a3d62; color:white; }
+.refresh-btn{ background:#16a085; color:white; }
+
+@media print{
+    body{ background:white; }
+    .buttons{ display:none; }
+}
+
+@page{
+    size:A4;
+    margin:10mm;
+}
+</style>
 </head>
+
 <body>
 
-<header>
-  <img src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hXU" alt="Sadiq Abbasi Hospital Logo">
-  <h1>SADIQ ABBASI HOSPITAL, BAHAWALPUR – Mortality Dashboard</h1>
-</header>
+<div id="dashboard">
 
-<div class="filters">
-  <div class="filter-group">
-    <label>From Date</label>
-    <input type="date" id="fromDate">
-  </div>
-  <div class="filter-group">
-    <label>To Date</label>
-    <input type="date" id="toDate">
-  </div>
-  <div class="filter-group">
-    <label>Department</label>
-    <select id="department"><option value="">All</option></select>
-  </div>
-  <div class="filter-group">
-    <label>District</label>
-    <select id="district"><option value="">All</option></select>
-  </div>
-  <div class="filter-group">
-    <label>Diagnosis</label>
-    <select id="diagnosis"><option value="">All</option></select>
-  </div>
-  <div class="filter-group">
-    <label>Gender</label>
-    <select id="gender"><option value="">All</option></select>
-  </div>
-  <div class="filter-group">
-    <label>Age Group</label>
-    <select id="ageGroup">
-      <option value="">All</option>
-      <option value="0-30d">Below 30 Days</option>
-      <option value="1m-1y">1 Month to 1 Year</option>
-      <option value="1y-15y">1 Year to 15 Years</option>
-      <option value="15y-30y">15 to 30 Years</option>
-      <option value="30y-45y">30 to 45 Years</option>
-      <option value="45y-60y">45 to 60 Years</option>
-      <option value="65+">65 Years & above</option>
-    </select>
-  </div>
+<div class="header">
+    <img src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hXU" alt="Hospital Logo">
+    <h2>SADIQ ABBASI HOSPITAL, BAHAWALPUR</h2>
+    <h3>Mortality Dashboard</h3>
 </div>
 
-<div class="kpi-container">
-  <div class="kpi">
-    <h2 id="totalDeaths">0</h2>
-    <p>Total Deaths</p>
-  </div>
-  <div class="kpi">
-    <h2 id="maleDeaths">0</h2>
-    <p>Total Male Deaths</p>
-  </div>
-  <div class="kpi">
-    <h2 id="femaleDeaths">0</h2>
-    <p>Total Female Deaths</p>
-  </div>
+<div class="container">
+
+<div class="filters">
+
+<div class="filter-box">
+<label>From Date</label>
+<input type="date" id="fromDate">
+</div>
+
+<div class="filter-box">
+<label>To Date</label>
+<input type="date" id="toDate">
+</div>
+
+<div class="filter-box">
+<label>DEPARTMENT</label>
+<select id="department"></select>
+</div>
+
+<div class="filter-box">
+<label>DISTRICT</label>
+<select id="district"></select>
+</div>
+
+<div class="filter-box">
+<label>DIAGNOSIS</label>
+<select id="diagnosis"></select>
+</div>
+
+<div class="filter-box">
+<label>GENDER</label>
+<select id="gender"></select>
+</div>
+
+<div class="filter-box">
+<label>AGE GROUP</label>
+<select id="ageGroup">
+<option value="">All</option>
+<option>Below 30 Days</option>
+<option>1 Month to 1 Year</option>
+<option>1 Year to 15 Years</option>
+<option>15 to 30 Years</option>
+<option>30 Years to 45 Years</option>
+<option>45 Years to 60 Years</option>
+<option>65 Years & above</option>
+</select>
+</div>
+
+</div>
+
+<div class="kpis">
+<div class="kpi">
+<h3>Total Deaths</h3>
+<p id="totalDeaths">0</p>
+</div>
+<div class="kpi">
+<h3>Total Male Deaths</h3>
+<p id="maleDeaths">0</p>
+</div>
+<div class="kpi">
+<h3>Total Female Deaths</h3>
+<p id="femaleDeaths">0</p>
+</div>
 </div>
 
 <div class="chart-container">
-  <canvas id="departmentChart"></canvas>
+<canvas id="deptChart" height="120"></canvas>
 </div>
 
 <div class="buttons">
-  <button id="exportPdf">Export to PDF</button>
-  <button onclick="location.reload()">Refresh</button>
+<button class="pdf-btn" onclick="exportPDF()">Export to PDF</button>
+<button class="refresh-btn" onclick="location.reload()">Refresh</button>
 </div>
 
-<footer>
-  Developed By: <a href="https://www.linkedin.com/in/smus79" target="_blank">Software Engineer MUHAMMAD UMAIR SYED (IT Officer, Sadiq Abbasi Hospital, Bahawalpur)</a>
-</footer>
+</div>
+
+<div class="footer">
+Developed By: 
+<a href="https://www.linkedin.com/in/smus79" target="_blank">
+Software Engineer MUHAMMAD UMAIR SYED
+</a> 
+(IT Officer, Sadiq Abbasi Hospital, Bahawalpur)
+</div>
+
+</div>
 
 <script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
 
 let rawData = [];
 let chart;
 
-function fetchData() {
-  Papa.parse(CSV_URL, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      rawData = results.data;
-      populateFilters();
-      updateDashboard();
-    }
-  });
+fetch(csvUrl)
+.then(res => res.text())
+.then(data => {
+    const rows = data.split("\n").map(r => r.split(","));
+    const headers = rows[0];
+    rawData = rows.slice(1);
+    populateDropdown(8, "department");  // Column I
+    populateDropdown(21, "diagnosis");  // Column U
+    populateDropdown(6, "gender");      // Column G
+    populateDropdown(21+1, "district"); // Column V (22 index)
+    applyFilters();
+});
+
+function populateDropdown(colIndex, id){
+    const dropdown = document.getElementById(id);
+    dropdown.innerHTML = "<option value=''>All</option>";
+    const values = [...new Set(rawData.map(r => r[colIndex]))].filter(v => v);
+    values.sort().forEach(val=>{
+        dropdown.innerHTML += `<option>${val}</option>`;
+    });
 }
 
-// Populate filter dropdowns
-function populateFilters() {
-  const deptSet = new Set(), distSet = new Set(), diagSet = new Set(), genderSet = new Set();
+document.querySelectorAll("select,input").forEach(el=>{
+    el.addEventListener("change", applyFilters);
+});
 
-  rawData.forEach(row => {
-    if(row['I']) deptSet.add(row['I']);
-    if(row['V']) distSet.add(row['V']);
-    if(row['U']) diagSet.add(row['U']);
-    if(row['G']) genderSet.add(row['G']);
-  });
-
-  fillDropdown('department', Array.from(deptSet).sort());
-  fillDropdown('district', Array.from(distSet).sort());
-  fillDropdown('diagnosis', Array.from(diagSet).sort());
-  fillDropdown('gender', Array.from(genderSet).sort());
-}
-
-function fillDropdown(id, items){
-  const select = document.getElementById(id);
-  select.innerHTML = '<option value="">All</option>';
-  items.forEach(item => {
-    const opt = document.createElement('option');
-    opt.value = item;
-    opt.textContent = item;
-    select.appendChild(opt);
-  });
-}
-
-// Filter data based on selections
-function filterData() {
-  const fromDate = document.getElementById('fromDate').value;
-  const toDate = document.getElementById('toDate').value;
-  const department = document.getElementById('department').value;
-  const district = document.getElementById('district').value;
-  const diagnosis = document.getElementById('diagnosis').value;
-  const gender = document.getElementById('gender').value;
-  const ageGroup = document.getElementById('ageGroup').value;
-
-  return rawData.filter(row => {
-    const rowDate = row['D'] ? new Date(row['D']) : null;
-    if(fromDate && rowDate < new Date(fromDate)) return false;
-    if(toDate && rowDate > new Date(toDate)) return false;
-    if(department && row['I'] !== department) return false;
-    if(district && row['V'] !== district) return false;
-    if(diagnosis && row['U'] !== diagnosis) return false;
-    if(gender && row['G'] !== gender) return false;
-
-    if(ageGroup){
-      const age = parseInt(row['F']); // Assuming column F = Age in days or years
-      switch(ageGroup){
-        case '0-30d': if(age > 30/365) return false; break;
-        case '1m-1y': if(age < 30/365 || age > 1) return false; break;
-        case '1y-15y': if(age < 1 || age > 15) return false; break;
-        case '15y-30y': if(age < 15 || age > 30) return false; break;
-        case '30y-45y': if(age < 30 || age > 45) return false; break;
-        case '45y-60y': if(age < 45 || age > 60) return false; break;
-        case '65+': if(age < 65) return false; break;
-      }
-    }
-
+function ageMatch(age, group){
+    age = parseInt(age);
+    if(!group) return true;
+    if(group==="Below 30 Days") return age < 1/12;
+    if(group==="1 Month to 1 Year") return age>=1/12 && age<1;
+    if(group==="1 Year to 15 Years") return age>=1 && age<=15;
+    if(group==="15 to 30 Years") return age>15 && age<=30;
+    if(group==="30 Years to 45 Years") return age>30 && age<=45;
+    if(group==="45 Years to 60 Years") return age>45 && age<=60;
+    if(group==="65 Years & above") return age>=65;
     return true;
-  });
 }
 
-function updateDashboard(){
-  const data = filterData();
+function applyFilters(){
+    const fromDate = new Date(document.getElementById("fromDate").value);
+    const toDate = new Date(document.getElementById("toDate").value);
+    const dept = department.value;
+    const dist = district.value;
+    const diag = diagnosis.value;
+    const gender = document.getElementById("gender").value;
+    const ageGroup = document.getElementById("ageGroup").value;
 
-  // KPIs
-  document.getElementById('totalDeaths').textContent = data.length;
-  document.getElementById('maleDeaths').textContent = data.filter(r=>r['G']==='Male').length;
-  document.getElementById('femaleDeaths').textContent = data.filter(r=>r['G']==='Female').length;
+    let filtered = rawData.filter(r=>{
+        const rowDate = new Date(r[0]);
+        return (!fromDate || rowDate>=fromDate) &&
+               (!toDate || rowDate<=toDate) &&
+               (!dept || r[8]===dept) &&
+               (!dist || r[22]===dist) &&
+               (!diag || r[21]===diag) &&
+               (!gender || r[6]===gender) &&
+               ageMatch(r[3], ageGroup);
+    });
 
-  // Pie chart for Department
-  const deptCounts = {};
-  data.forEach(r => { if(r['I']) deptCounts[r['I']] = (deptCounts[r['I']]||0)+1; });
-  const labels = Object.keys(deptCounts);
-  const values = Object.values(deptCounts);
+    document.getElementById("totalDeaths").innerText = filtered.length;
+    document.getElementById("maleDeaths").innerText = filtered.filter(r=>r[6]==="Male").length;
+    document.getElementById("femaleDeaths").innerText = filtered.filter(r=>r[6]==="Female").length;
 
-  if(chart) chart.destroy();
-  const ctx = document.getElementById('departmentChart').getContext('2d');
-  chart = new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: values,
-        backgroundColor: labels.map(()=>randomColor())
-      }]
-    },
-    options: {
-      responsive:true,
-      plugins: {
-        legend: { position: 'bottom' }
-      }
-    }
-  });
+    const deptCounts = {};
+    filtered.forEach(r=>{
+        deptCounts[r[8]] = (deptCounts[r[8]]||0)+1;
+    });
+
+    const labels = Object.keys(deptCounts);
+    const data = Object.values(deptCounts);
+
+    if(chart) chart.destroy();
+    chart = new Chart(document.getElementById("deptChart"),{
+        type:'bar',
+        data:{
+            labels:labels,
+            datasets:[{
+                label:'Deaths by Department',
+                data:data,
+                backgroundColor:[
+                    '#3498db','#e74c3c','#2ecc71','#9b59b6',
+                    '#f39c12','#1abc9c','#34495e','#e67e22'
+                ]
+            }]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{ display:false }
+            }
+        }
+    });
 }
 
-// Random pastel color
-function randomColor(){
-  const r = Math.floor(Math.random()*200)+50;
-  const g = Math.floor(Math.random()*200)+50;
-  const b = Math.floor(Math.random()*200)+50;
-  return `rgb(${r},${g},${b})`;
+function exportPDF(){
+    const element = document.getElementById("dashboard");
+    html2pdf().from(element).set({
+        margin:10,
+        filename:'Mortality_Dashboard.pdf',
+        html2canvas:{ scale:2 },
+        jsPDF:{ unit:'mm', format:'a4', orientation:'portrait' }
+    }).save();
 }
 
-// Event listeners
-document.querySelectorAll('.filters select, .filters input').forEach(el=>{
-  el.addEventListener('change', updateDashboard);
-});
-
-// Export to PDF
-document.getElementById('exportPdf').addEventListener('click', () => {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p','mm','a4');
-  doc.html(document.body, {
-    callback: function (doc) { doc.save('Mortality_Dashboard.pdf'); },
-    x: 10,
-    y: 10,
-    width: 190
-  });
-});
-
-fetchData();
 </script>
 
 </body>
