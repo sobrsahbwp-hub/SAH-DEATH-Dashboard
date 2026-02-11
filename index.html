@@ -6,31 +6,31 @@
 
 <style>
 body{
-font-family:Segoe UI, sans-serif;
-background:#f4f8fc;
-padding:40px;
+    font-family:Segoe UI, sans-serif;
+    background:#f4f6f9;
+    padding:40px;
 }
 
 .container{
-max-width:400px;
-margin:auto;
-background:white;
-padding:30px;
-border-radius:12px;
-box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    max-width:400px;
+    margin:auto;
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
 }
 
 label{
-font-weight:600;
-display:block;
-margin-bottom:8px;
+    font-weight:600;
+    display:block;
+    margin-bottom:8px;
 }
 
 select{
-width:100%;
-padding:10px;
-border-radius:6px;
-border:1px solid #ccc;
+    width:100%;
+    padding:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
 }
 </style>
 </head>
@@ -38,10 +38,10 @@ border:1px solid #ccc;
 <body>
 
 <div class="container">
-<label for="district">District</label>
-<select id="district">
-<option>Loading...</option>
-</select>
+    <label for="district">District</label>
+    <select id="district">
+        <option>Loading...</option>
+    </select>
 </div>
 
 <script>
@@ -52,39 +52,40 @@ fetch(csvUrl)
 .then(response => response.text())
 .then(csv => {
 
-    const rows = csv.trim().split("\n").map(row => row.split(","));
-    const headers = rows[0].map(h => h.trim());
+    // Proper CSV parsing (handles commas inside quotes)
+    const rows = csv.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
 
-    // Find index of District column
-    const districtIndex = headers.findIndex(h => h.toLowerCase() === "district");
+    const lines = csv.split("\n");
 
-    if (districtIndex === -1) {
-        alert("District column not found in sheet.");
-        return;
-    }
+    let columnIndex = 21; // Column V = index 21 (0-based)
 
-    // Extract district values
-    const districts = rows.slice(1)
-        .map(row => row[districtIndex]?.trim())
-        .filter(value => value && value !== "");
+    let districts = [];
 
-    // Remove duplicates (grouped data)
-    const uniqueDistricts = [...new Set(districts)].sort();
+    lines.slice(1).forEach(line => {
+        let values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        if(values[columnIndex]){
+            let val = values[columnIndex].replace(/"/g,"").trim();
+            if(val) districts.push(val);
+        }
+    });
 
-    // Fill dropdown
+    // Remove duplicates & sort
+    let uniqueDistricts = [...new Set(districts)].sort();
+
     const select = document.getElementById("district");
-    select.innerHTML = "<option>ALL DISTRICTS</option>";
+    select.innerHTML = "<option value=''>Select District</option>";
 
-    uniqueDistricts.forEach(district => {
-        const option = document.createElement("option");
-        option.value = district;
-        option.textContent = district;
+    uniqueDistricts.forEach(d => {
+        let option = document.createElement("option");
+        option.value = d;
+        option.textContent = d;
         select.appendChild(option);
     });
 
 })
 .catch(error => {
-    console.error("Error fetching data:", error);
+    document.getElementById("district").innerHTML = "<option>Error loading data</option>";
+    console.error("Error:", error);
 });
 
 </script>
