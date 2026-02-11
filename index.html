@@ -8,36 +8,40 @@
 <style>
 body {
     margin: 0;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: #f4f9ff;
-    color: #1a2b3c;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f4f8fc;
+    color: #1e2a38;
 }
 
 .header {
     text-align: center;
-    padding: 25px 10px;
+    padding: 30px 10px;
     background: linear-gradient(135deg, #e3f2fd, #ffffff);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-.monogram {
-    font-size: 28px;
-    font-weight: 700;
+.header h1 {
+    margin: 0;
+    font-size: 26px;
     letter-spacing: 2px;
-    color: #0066cc;
+    color: #0077cc;
 }
 
 .subtitle {
     font-size: 14px;
     color: #555;
+    margin-top: 5px;
 }
 
 .container {
     padding: 30px;
 }
 
-.filter-box {
-    margin-bottom: 20px;
+.dashboard-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 label {
@@ -49,36 +53,8 @@ select {
     padding: 8px 12px;
     border-radius: 6px;
     border: 1px solid #ccc;
-    background: #fff;
     font-size: 14px;
-}
-
-.table-container {
-    background: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-    font-size: 13px;
-}
-
-th {
-    background: #0066cc;
-    color: #ffffff;
-}
-
-tr:hover {
-    background: #f1f7ff;
+    background: #fff;
 }
 
 .footer {
@@ -93,34 +69,21 @@ tr:hover {
 <body>
 
 <div class="header">
-    <div class="monogram">🏥 SADIQ ABBASI HOSPITAL</div>
+    <h1>🏥 SADIQ ABBASI HOSPITAL</h1>
     <div class="subtitle">BAHAWALPUR | Hi-Tech Hospital Dashboard</div>
 </div>
 
 <div class="container">
-
-    <div class="filter-box">
+    <div class="dashboard-card">
         <label for="departmentSelect">Select Department:</label>
         <select id="departmentSelect">
             <option value="All">All Departments</option>
         </select>
     </div>
-
-    <div class="table-container">
-        <table id="dataTable">
-            <thead>
-                <tr>
-                    <th>DEPARTMENT</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
 </div>
 
 <div class="footer">
-    Live Data from Google Sheet | DATA
+    Live Data Connected from Google Sheet (DATA)
 </div>
 
 <script>
@@ -132,51 +95,34 @@ fetch(csvUrl)
 .then(response => response.text())
 .then(data => {
     const rows = data.split("\n").map(row => row.split(","));
-    const headers = rows[0];
-
+    const headers = rows[0].map(h => h.trim());
+    
     const deptIndex = headers.indexOf("DEPARTMENT");
 
-    fullData = rows.slice(1).map(row => ({
-        DEPARTMENT: row[deptIndex]
-    })).filter(item => item.DEPARTMENT);
+    if (deptIndex === -1) {
+        alert("DEPARTMENT column not found in sheet.");
+        return;
+    }
+
+    // Extract department values
+    fullData = rows.slice(1)
+        .map(row => row[deptIndex]?.trim())
+        .filter(value => value && value !== "");
 
     populateDepartments();
-    renderTable(fullData);
 });
 
 function populateDepartments() {
     const select = document.getElementById("departmentSelect");
-    const departments = [...new Set(fullData.map(item => item.DEPARTMENT))];
 
-    departments.sort().forEach(dept => {
+    // Get unique departments
+    const uniqueDepartments = [...new Set(fullData)];
+
+    uniqueDepartments.sort().forEach(dept => {
         const option = document.createElement("option");
         option.value = dept;
         option.textContent = dept;
         select.appendChild(option);
-    });
-}
-
-document.getElementById("departmentSelect").addEventListener("change", function() {
-    const selected = this.value;
-    if (selected === "All") {
-        renderTable(fullData);
-    } else {
-        const filtered = fullData.filter(item => item.DEPARTMENT === selected);
-        renderTable(filtered);
-    }
-});
-
-function renderTable(data) {
-    const tbody = document.querySelector("#dataTable tbody");
-    tbody.innerHTML = "";
-
-    data.forEach(item => {
-        const row = `
-            <tr>
-                <td>${item.DEPARTMENT}</td>
-            </tr>
-        `;
-        tbody.innerHTML += row;
     });
 }
 </script>
