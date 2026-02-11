@@ -59,7 +59,7 @@ text-align:center;
 .kpi h2{margin:0;color:#003366;font-size:28px;}
 
 .chart-container{
-max-width:800px;
+max-width:500px;
 margin:auto;
 background:white;
 padding:20px;
@@ -162,7 +162,7 @@ src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hX
 </div>
 
 <div class="chart-container">
-<canvas id="deptChart"></canvas>
+<canvas id="pieChart"></canvas>
 </div>
 
 <div class="buttons">
@@ -195,18 +195,29 @@ const rows=text.trim().split("\n")
 
 rawData=rows.slice(1);
 
-populateDropdown(8,"department"); // Column I
-populateDropdown(21,"district"); // Column V
-populateDropdown(20,"diagnosis"); // Column U
-populateDropdown(6,"gender"); // Column G
+populateDropdown(8,"department");
+populateDropdown(21,"district",true);
+populateDropdown(20,"diagnosis");
+populateDropdown(6,"gender");
 
 applyFilters();
 });
 
-function populateDropdown(colIndex,id){
-let values=[...new Set(rawData.map(r=>r[colIndex]?.replace(/"/g,"").trim()).filter(Boolean))].sort();
+function isValidDate(val){
+return !isNaN(Date.parse(val));
+}
+
+function populateDropdown(colIndex,id,excludeDates=false){
+let values=[...new Set(rawData.map(r=>{
+let v=r[colIndex]?.replace(/"/g,"").trim();
+if(!v) return null;
+if(excludeDates && isValidDate(v)) return null;
+return v;
+}).filter(Boolean))].sort();
+
 let select=document.getElementById(id);
 select.innerHTML="<option>ALL</option>";
+
 values.forEach(v=>{
 let opt=document.createElement("option");
 opt.text=v;
@@ -258,10 +269,8 @@ return true;
 });
 
 document.getElementById("total").innerText=filtered.length;
-document.getElementById("male").innerText=
-filtered.filter(r=>r[6]=="MALE").length;
-document.getElementById("female").innerText=
-filtered.filter(r=>r[6]=="FEMALE").length;
+document.getElementById("male").innerText=filtered.filter(r=>r[6]=="MALE").length;
+document.getElementById("female").innerText=filtered.filter(r=>r[6]=="FEMALE").length;
 
 let deptCounts={};
 filtered.forEach(r=>{
@@ -273,10 +282,11 @@ drawChart(deptCounts);
 }
 
 function drawChart(dataObj){
+
 if(chart) chart.destroy();
 
-chart=new Chart(document.getElementById("deptChart"),{
-type:"bar",
+chart=new Chart(document.getElementById("pieChart"),{
+type:"pie",
 data:{
 labels:Object.keys(dataObj),
 datasets:[{
@@ -284,15 +294,11 @@ data:Object.values(dataObj),
 backgroundColor:[
 "#003366","#006699","#0099cc","#00cccc",
 "#33cccc","#66cccc","#ff6666","#ff9966",
-"#ffcc66","#cc6699","#6699ff"
+"#ffcc66","#cc6699","#6699ff","#66cc99"
 ]
 }]
 },
-options:{
-plugins:{legend:{display:false}},
-responsive:true,
-scales:{y:{beginAtZero:true}}
-}
+options:{responsive:true}
 });
 }
 
