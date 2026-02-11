@@ -1,51 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sadiq Abbasi Hospital Dashboard</title>
 
 <style>
     body {
         margin: 0;
         font-family: 'Segoe UI', Arial, sans-serif;
-        background-color: #f4f8fb;
+        background: #f4f9ff;
         color: #2c3e50;
     }
 
+    /* Header */
     .header {
         text-align: center;
-        padding: 20px;
-        background: linear-gradient(to right, #e3f2fd, #ffffff);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        padding: 25px 10px;
+        background: linear-gradient(135deg, #e3f2fd, #ffffff);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     }
 
     .header img {
-        height: 80px;
+        height: 90px;
         margin-bottom: 10px;
     }
 
     .header h1 {
         margin: 5px 0;
-        font-size: 26px;
-        letter-spacing: 1px;
+        font-size: 28px;
         color: #0d47a1;
+        letter-spacing: 1px;
     }
 
+    .header p {
+        margin: 0;
+        font-size: 14px;
+        color: #546e7a;
+    }
+
+    /* Dashboard Container */
     .container {
-        width: 80%;
+        width: 85%;
+        max-width: 1000px;
         margin: 40px auto;
-        background: white;
+        background: #ffffff;
         padding: 30px;
         border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
     }
 
     .card {
-        background: #f9fbfd;
-        border-left: 5px solid #1976d2;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
+        background: #f9fcff;
+        border-left: 6px solid #1976d2;
+        padding: 25px;
+        border-radius: 10px;
     }
 
     label {
@@ -55,85 +64,81 @@
 
     select {
         width: 100%;
-        padding: 10px;
-        margin-top: 8px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: 1px solid #cfd8dc;
         font-size: 15px;
         background-color: #ffffff;
-        transition: 0.3s;
+        transition: 0.3s ease;
     }
 
     select:focus {
         border-color: #1976d2;
+        box-shadow: 0 0 8px rgba(25,118,210,0.2);
         outline: none;
-        box-shadow: 0 0 5px rgba(25,118,210,0.3);
     }
 
     footer {
         text-align: center;
         padding: 15px;
         font-size: 13px;
-        color: #777;
+        color: #78909c;
+        margin-top: 30px;
+    }
+
+    @media(max-width: 600px){
+        .container{
+            width: 95%;
+        }
     }
 </style>
 </head>
 
 <body>
 
+<!-- Header -->
 <div class="header">
-    <!-- Replace src with actual monogram image URL -->
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/HD_transparent_picture.png" alt="Monogram">
+    <!-- Replace with actual hospital monogram image URL -->
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/HD_transparent_picture.png" alt="Hospital Monogram">
     <h1>SADIQ ABBASI HOSPITAL, BAHAWALPUR</h1>
-    <p>Hi-Tech Administrative Dashboard</p>
+    <p>Hi-Tech Digital Management Dashboard</p>
 </div>
 
+<!-- Main Dashboard -->
 <div class="container">
     <div class="card">
-        <label for="departmentDropdown">Select Department (From DATA Sheet - Column I):</label>
-        <select id="departmentDropdown">
-            <option>Loading departments...</option>
+        <label for="wardSelect">Select Ward / Department:</label>
+        <select id="wardSelect">
+            <option value="">-- Select Ward --</option>
+            <option>GYNAE WARD</option>
+            <option>PEADS WARD</option>
+            <option>PEADS EMERGENCY WARD</option>
+            <option>NICU EMERGENCY</option>
+            <option>NURSERY (OUT-BORN) WARD</option>
+            <option>PICU WARD</option>
+            <option>NICU (IN-BORN) WARD</option>
+            <option>SURGICAL WARD</option>
+            <option>ORTHO WARD</option>
+            <option>MEDICAL WARD</option>
+            <option>PULMONOLOGY WARD</option>
+            <option>MEDICAL/SURGICAL ICU WARD</option>
+            <option>PRIVATE ROOM</option>
+            <option>ENT WARD</option>
+            <option>EYE WARD</option>
+            <option>EMERGENCY WARD</option>
+            <option>DENGUE WARD</option>
         </select>
     </div>
 </div>
 
 <footer>
-    © 2026 Sadiq Abbasi Hospital Bahawalpur | Digital Monitoring System
+    © 2026 Sadiq Abbasi Hospital Bahawalpur | Integrated Health Information System
 </footer>
 
 <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
-
-fetch(sheetURL)
-.then(response => response.text())
-.then(data => {
-    const rows = data.split("\n");
-    const departmentSet = new Set();
-
-    rows.slice(1).forEach(row => {
-        const columns = row.split(",");
-        if(columns[8]) {  // Column I (9th column, index 8)
-            departmentSet.add(columns[8].trim());
-        }
-    });
-
-    const dropdown = document.getElementById("departmentDropdown");
-    dropdown.innerHTML = '<option value="">-- Select Department --</option>';
-
-    departmentSet.forEach(dept => {
-        if(dept !== "") {
-            const option = document.createElement("option");
-            option.value = dept;
-            option.textContent = dept;
-            dropdown.appendChild(option);
-        }
-    });
-})
-.catch(error => {
-    console.error("Error fetching data:", error);
-    document.getElementById("departmentDropdown").innerHTML =
-        "<option>Error loading data</option>";
-});
+    // Google Sheet Link (DATA Sheet - Ready for Future Use)
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
 </script>
 
 </body>
