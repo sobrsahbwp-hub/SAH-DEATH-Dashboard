@@ -3,142 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sadiq Abbasi Hospital - Executive Mortality Dashboard</title>
+<title>Sadiq Abbasi Hospital - Mortality Dashboard</title>
 
+<!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-:root{
---bg:#f4f8fc;
---card:#ffffff;
---text:#222;
---primary:#007BFF;
-}
-
-.dark-mode{
---bg:#121212;
---card:#1e1e1e;
---text:#f1f1f1;
---primary:#4da3ff;
-}
-
 body{
-font-family:'Segoe UI',sans-serif;
-margin:0;
-background:var(--bg);
-color:var(--text);
-transition:0.3s;
+    font-family:'Segoe UI',sans-serif;
+    margin:0;
+    background:#f4f8fc;
+    opacity:0;
+    animation:fadeIn 1s ease-in-out forwards;
+}
+
+/* PAGE FADE IN */
+@keyframes fadeIn{
+    to{opacity:1;}
 }
 
 .top-bar{
-display:flex;
-justify-content:flex-end;
-padding:10px 20px;
-background:var(--card);
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    padding:10px 20px;
+    background:#ffffff;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.clock{
+    font-size:16px;
+    font-weight:bold;
+    color:#007BFF;
 }
 
 header{
-text-align:center;
-background:var(--card);
-padding:15px;
+    text-align:center;
+    padding:15px;
+    background:white;
 }
-
 .logo{height:80px;}
 
 .filters{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:15px;
-padding:20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+    padding:20px;
 }
 
 select,input{
-padding:6px;
-border-radius:6px;
-border:1px solid #ccc;
-width:100%;
+    width:100%;
+    padding:6px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    transition:0.3s;
+}
+select:hover,input:hover{
+    box-shadow:0 0 5px rgba(0,123,255,0.4);
 }
 
 .kpis{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:20px;
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+    padding:10px;
 }
 
 .kpi{
-background:var(--card);
-padding:20px;
-border-radius:10px;
-box-shadow:0 3px 8px rgba(0,0,0,0.1);
-width:220px;
-text-align:center;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    text-align:center;
+    width:220px;
+    transition:0.3s;
+}
+.kpi:hover{
+    transform:translateY(-5px);
 }
 
 .chart-wrapper{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:30px;
-padding:20px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:30px;
+    padding:20px;
 }
 
 .chart-box{
-background:var(--card);
-padding:20px;
-border-radius:10px;
-width:480px;
-box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    width:480px;
+    transition:0.3s;
 }
-
-.bottom-buttons{
-position:fixed;
-bottom:20px;
-left:0;
-right:0;
-display:flex;
-justify-content:space-between;
-padding:0 30px;
-}
-
-.center-toggle{
-position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
+.chart-box:hover{
+    transform:scale(1.02);
 }
 
 button{
-padding:10px 18px;
-border:none;
-border-radius:6px;
-background:var(--primary);
-color:white;
-cursor:pointer;
+    padding:8px 15px;
+    border:none;
+    border-radius:6px;
+    background:#007BFF;
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+}
+button:hover{
+    transform:scale(1.05);
+    opacity:0.9;
 }
 
 footer{
-text-align:center;
-padding:15px;
-background:var(--card);
-margin-top:40px;
+    text-align:center;
+    padding:10px;
+    background:#fff;
 }
 </style>
 </head>
 <body>
 
 <div class="top-bar">
-<div id="clock"></div>
+<div class="clock" id="clock"></div>
 </div>
 
 <header>
 <img src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hXU" class="logo">
 <h2>SADIQ ABBASI HOSPITAL, BAHAWALPUR</h2>
-<h3>Executive Mortality Dashboard</h3>
+<h3>Hospital Mortality Dashboard</h3>
 </header>
 
 <div class="filters">
@@ -151,10 +148,18 @@ margin-top:40px;
 </div>
 
 <div class="kpis">
-<div class="kpi"><h4>Total Deaths</h4><h2 id="totalDeaths">0</h2></div>
-<div class="kpi"><h4>Total Male</h4><h2 id="maleDeaths">0</h2></div>
-<div class="kpi"><h4>Total Female</h4><h2 id="femaleDeaths">0</h2></div>
-<div class="kpi"><h4>Mortality Rate %</h4><h2 id="mortalityRate">0%</h2></div>
+<div class="kpi">
+<h4>Total Deaths</h4>
+<h2 id="totalDeaths">0</h2>
+</div>
+<div class="kpi">
+<h4>Total Male Deaths</h4>
+<h2 id="maleDeaths">0</h2>
+</div>
+<div class="kpi">
+<h4>Total Female Deaths</h4>
+<h2 id="femaleDeaths">0</h2>
+</div>
 </div>
 
 <div class="chart-wrapper">
@@ -162,40 +167,49 @@ margin-top:40px;
 <h4>Department Wise Deaths</h4>
 <canvas id="deptChart"></canvas>
 </div>
+
 <div class="chart-box">
 <h4>District Wise Distribution</h4>
 <canvas id="districtChart"></canvas>
 </div>
 </div>
 
-<div class="bottom-buttons">
-<button onclick="exportExecutivePDF()">Export Executive PDF</button>
-<button onclick="location.reload()">Reload</button>
-</div>
-
-<div class="center-toggle">
-<button onclick="document.body.classList.toggle('dark-mode')">Toggle Theme</button>
-</div>
-
 <footer>
-<a href="https://www.linkedin.com/in/smus79" target="_blank">
+Developed By:
 Software Engineer MUHAMMAD UMAIR SYED
-</a><br>
-(IT Officer, Sadiq Abbasi Hospital, Bahawalpur)
 </footer>
 
 <script>
 
-const sheetURL="YOUR_GOOGLE_SHEET_CSV_LINK";
+const sheetURL="YOUR_CSV_LINK_HERE";
 
 let rawData=[];
 let deptChart,districtChart;
 
 /* CLOCK */
-setInterval(()=>{
-document.getElementById("clock").innerText=
-new Date().toLocaleString();
-},1000);
+function updateClock(){
+const now=new Date();
+document.getElementById("clock").innerHTML=
+now.toLocaleDateString()+" | "+now.toLocaleTimeString();
+}
+setInterval(updateClock,1000);
+updateClock();
+
+/* KPI COUNT ANIMATION */
+function animateValue(id,end){
+let start=0;
+let duration=800;
+let range=end-start;
+let increment=end>start?1:-1;
+let stepTime=Math.abs(Math.floor(duration/range));
+let obj=document.getElementById(id);
+
+let timer=setInterval(()=>{
+start+=increment;
+obj.innerText=start;
+if(start==end) clearInterval(timer);
+},stepTime);
+}
 
 /* LOAD DATA */
 Papa.parse(sheetURL,{
@@ -203,14 +217,14 @@ download:true,
 header:true,
 skipEmptyLines:true,
 complete:function(results){
+
 rawData=results.data.map(r=>({
-DATE:r["DATE"]?new Date(r["DATE"]):null,
+DATE:new Date(r["DATE"]),
 GENDER:(r["GENDER"]||"").trim().toLowerCase(),
 DEPARTMENT:(r["DEPARTMENT"]||"").trim(),
-DISTRICT:(r["DISTRICT"]||"").trim(),
-DIAGNOSIS:(r["DIAGNOSIS"]||"").trim(),
-ADMISSIONS:parseFloat(r["ADMISSIONS"])||0
+DISTRICT:(r["DISTRICT"]||"").trim()
 }));
+
 populateFilters();
 applyFilters();
 }
@@ -227,7 +241,6 @@ select.innerHTML+=`<option value="${v}">${v}</option>`;
 function populateFilters(){
 populateSelect("DEPARTMENT","department");
 populateSelect("DISTRICT","district");
-populateSelect("DIAGNOSIS","diagnosis");
 populateSelect("GENDER","gender");
 }
 
@@ -237,43 +250,31 @@ el.addEventListener("change",applyFilters);
 
 function applyFilters(){
 
-const from=fromDate.value;
-const to=toDate.value;
-const dept=department.value;
-const dist=district.value;
-const diag=diagnosis.value;
-const gen=gender.value;
+let filtered=rawData.filter(d=>
+(!department.value || d.DEPARTMENT===department.value) &&
+(!district.value || d.DISTRICT===district.value) &&
+(!gender.value || d.GENDER===gender.value)
+);
 
-let filtered=rawData.filter(d=>{
-let dateMatch=true;
-if(from && d.DATE) dateMatch=d.DATE>=new Date(from);
-if(to && d.DATE) dateMatch=dateMatch && d.DATE<=new Date(to);
+animateValue("totalDeaths",filtered.length);
+animateValue("maleDeaths",filtered.filter(d=>d.GENDER==="male").length);
+animateValue("femaleDeaths",filtered.filter(d=>d.GENDER==="female").length);
 
-return dateMatch &&
-(!dept||d.DEPARTMENT===dept) &&
-(!dist||d.DISTRICT===dist) &&
-(!diag||d.DIAGNOSIS===diag) &&
-(!gen||d.GENDER===gen);
-});
+createCharts(filtered);
+}
 
-/* KPI */
-document.getElementById("totalDeaths").innerText=filtered.length;
-document.getElementById("maleDeaths").innerText=
-filtered.filter(d=>d.GENDER==="male").length;
-document.getElementById("femaleDeaths").innerText=
-filtered.filter(d=>d.GENDER==="female").length;
+function generateColors(count){
+return Array.from({length:count},(_,i)=>`hsl(${i*50},70%,55%)`);
+}
 
-let totalAdmissions=filtered.reduce((sum,d)=>sum+d.ADMISSIONS,0);
-let mortalityRate= totalAdmissions>0 ?
-((filtered.length/totalAdmissions)*100).toFixed(2) : 0;
+function createCharts(data){
 
-document.getElementById("mortalityRate").innerText=mortalityRate+"%";
+let deptGroup={}, districtGroup={};
 
-/* Charts */
-let deptGroup={},districtGroup={};
-filtered.forEach(d=>{
+data.forEach(d=>{
 if(d.DEPARTMENT)
 deptGroup[d.DEPARTMENT]=(deptGroup[d.DEPARTMENT]||0)+1;
+
 if(d.DISTRICT)
 districtGroup[d.DISTRICT]=(districtGroup[d.DISTRICT]||0)+1;
 });
@@ -281,16 +282,20 @@ districtGroup[d.DISTRICT]=(districtGroup[d.DISTRICT]||0)+1;
 if(deptChart) deptChart.destroy();
 if(districtChart) districtChart.destroy();
 
-deptChart=new Chart(document.getElementById("deptChart"),{
+deptChart=new Chart(deptChart=document.getElementById("deptChart"),{
 type:"bar",
 data:{
 labels:Object.keys(deptGroup),
 datasets:[{
 data:Object.values(deptGroup),
-backgroundColor:Object.keys(deptGroup).map((_,i)=>`hsl(${i*45},70%,55%)`)
+backgroundColor:generateColors(Object.keys(deptGroup).length)
 }]
 },
-options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+options:{
+animation:{duration:1500,easing:'easeOutBounce'},
+plugins:{legend:{display:false}},
+scales:{y:{beginAtZero:true}}
+}
 });
 
 districtChart=new Chart(document.getElementById("districtChart"),{
@@ -299,43 +304,14 @@ data:{
 labels:Object.keys(districtGroup),
 datasets:[{
 data:Object.values(districtGroup),
-backgroundColor:Object.keys(districtGroup).map((_,i)=>`hsl(${i*45},70%,55%)`)
+backgroundColor:generateColors(Object.keys(districtGroup).length)
 }]
 },
-options:{responsive:true,plugins:{legend:{position:"bottom"}}}
-});
+options:{
+animation:{animateRotate:true,duration:1500},
+plugins:{legend:{position:"bottom"}}
 }
-
-/* EXECUTIVE PDF */
-async function exportExecutivePDF(){
-
-const {jsPDF}=window.jspdf;
-const pdf=new jsPDF("p","mm","a4");
-
-/* PAGE 1 - SUMMARY */
-pdf.setFontSize(16);
-pdf.text("SADIQ ABBASI HOSPITAL, BAHAWALPUR",105,15,null,null,"center");
-pdf.setFontSize(12);
-pdf.text("Executive Mortality Report",105,22,null,null,"center");
-
-pdf.setFontSize(10);
-pdf.text("Generated: "+new Date().toLocaleString(),14,30);
-
-pdf.text("Total Deaths: "+totalDeaths.innerText,14,40);
-pdf.text("Male Deaths: "+maleDeaths.innerText,14,46);
-pdf.text("Female Deaths: "+femaleDeaths.innerText,14,52);
-pdf.text("Mortality Rate: "+mortalityRate.innerText,14,58);
-
-/* PAGE 2 - CHARTS */
-pdf.addPage();
-
-const deptCanvas=await html2canvas(document.getElementById("deptChart"));
-const distCanvas=await html2canvas(document.getElementById("districtChart"));
-
-pdf.addImage(deptCanvas.toDataURL("image/png"),"PNG",10,15,190,90);
-pdf.addImage(distCanvas.toDataURL("image/png"),"PNG",10,115,190,90);
-
-pdf.save("Executive_Mortality_Report.pdf");
+});
 }
 
 </script>
