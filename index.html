@@ -3,16 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sadiq Abbasi Hospital - Mortality Dashboard</title>
+<title>Sadiq Abbasi Hospital - Executive Mortality Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
-
-/* ===== THEME VARIABLES ===== */
 :root{
 --bg:#f4f8fc;
 --card:#ffffff;
@@ -43,11 +41,6 @@ background:var(--card);
 box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-.clock{
-font-weight:bold;
-color:var(--primary);
-}
-
 header{
 text-align:center;
 background:var(--card);
@@ -64,17 +57,17 @@ padding:20px;
 }
 
 select,input{
-width:100%;
 padding:6px;
 border-radius:6px;
 border:1px solid #ccc;
+width:100%;
 }
 
 .kpis{
 display:flex;
+flex-wrap:wrap;
 justify-content:center;
 gap:20px;
-flex-wrap:wrap;
 }
 
 .kpi{
@@ -82,8 +75,8 @@ background:var(--card);
 padding:20px;
 border-radius:10px;
 box-shadow:0 3px 8px rgba(0,0,0,0.1);
-text-align:center;
 width:220px;
+text-align:center;
 }
 
 .chart-wrapper{
@@ -98,8 +91,8 @@ padding:20px;
 background:var(--card);
 padding:20px;
 border-radius:10px;
-box-shadow:0 3px 8px rgba(0,0,0,0.1);
 width:480px;
+box-shadow:0 3px 8px rgba(0,0,0,0.1);
 }
 
 .bottom-buttons{
@@ -134,25 +127,18 @@ padding:15px;
 background:var(--card);
 margin-top:40px;
 }
-
-footer a{
-color:var(--primary);
-text-decoration:none;
-font-weight:600;
-}
-
 </style>
 </head>
 <body>
 
 <div class="top-bar">
-<div class="clock" id="clock"></div>
+<div id="clock"></div>
 </div>
 
 <header>
 <img src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hXU" class="logo">
 <h2>SADIQ ABBASI HOSPITAL, BAHAWALPUR</h2>
-<h3>Hospital Mortality Dashboard</h3>
+<h3>Executive Mortality Dashboard</h3>
 </header>
 
 <div class="filters">
@@ -161,4 +147,197 @@ font-weight:600;
 <div><label>Department</label><select id="department"><option value="">All</option></select></div>
 <div><label>District</label><select id="district"><option value="">All</option></select></div>
 <div><label>Diagnosis</label><select id="diagnosis"><option value="">All</option></select></div>
-<div><label>Gender</label><select id="gender"><option value="">All</option></se
+<div><label>Gender</label><select id="gender"><option value="">All</option></select></div>
+</div>
+
+<div class="kpis">
+<div class="kpi"><h4>Total Deaths</h4><h2 id="totalDeaths">0</h2></div>
+<div class="kpi"><h4>Total Male</h4><h2 id="maleDeaths">0</h2></div>
+<div class="kpi"><h4>Total Female</h4><h2 id="femaleDeaths">0</h2></div>
+<div class="kpi"><h4>Mortality Rate %</h4><h2 id="mortalityRate">0%</h2></div>
+</div>
+
+<div class="chart-wrapper">
+<div class="chart-box">
+<h4>Department Wise Deaths</h4>
+<canvas id="deptChart"></canvas>
+</div>
+<div class="chart-box">
+<h4>District Wise Distribution</h4>
+<canvas id="districtChart"></canvas>
+</div>
+</div>
+
+<div class="bottom-buttons">
+<button onclick="exportExecutivePDF()">Export Executive PDF</button>
+<button onclick="location.reload()">Reload</button>
+</div>
+
+<div class="center-toggle">
+<button onclick="document.body.classList.toggle('dark-mode')">Toggle Theme</button>
+</div>
+
+<footer>
+<a href="https://www.linkedin.com/in/smus79" target="_blank">
+Software Engineer MUHAMMAD UMAIR SYED
+</a><br>
+(IT Officer, Sadiq Abbasi Hospital, Bahawalpur)
+</footer>
+
+<script>
+
+const sheetURL="YOUR_GOOGLE_SHEET_CSV_LINK";
+
+let rawData=[];
+let deptChart,districtChart;
+
+/* CLOCK */
+setInterval(()=>{
+document.getElementById("clock").innerText=
+new Date().toLocaleString();
+},1000);
+
+/* LOAD DATA */
+Papa.parse(sheetURL,{
+download:true,
+header:true,
+skipEmptyLines:true,
+complete:function(results){
+rawData=results.data.map(r=>({
+DATE:r["DATE"]?new Date(r["DATE"]):null,
+GENDER:(r["GENDER"]||"").trim().toLowerCase(),
+DEPARTMENT:(r["DEPARTMENT"]||"").trim(),
+DISTRICT:(r["DISTRICT"]||"").trim(),
+DIAGNOSIS:(r["DIAGNOSIS"]||"").trim(),
+ADMISSIONS:parseFloat(r["ADMISSIONS"])||0
+}));
+populateFilters();
+applyFilters();
+}
+});
+
+function populateSelect(key,id){
+const select=document.getElementById(id);
+const values=[...new Set(rawData.map(d=>d[key]).filter(v=>v))].sort();
+values.forEach(v=>{
+select.innerHTML+=`<option value="${v}">${v}</option>`;
+});
+}
+
+function populateFilters(){
+populateSelect("DEPARTMENT","department");
+populateSelect("DISTRICT","district");
+populateSelect("DIAGNOSIS","diagnosis");
+populateSelect("GENDER","gender");
+}
+
+document.querySelectorAll("select,input").forEach(el=>{
+el.addEventListener("change",applyFilters);
+});
+
+function applyFilters(){
+
+const from=fromDate.value;
+const to=toDate.value;
+const dept=department.value;
+const dist=district.value;
+const diag=diagnosis.value;
+const gen=gender.value;
+
+let filtered=rawData.filter(d=>{
+let dateMatch=true;
+if(from && d.DATE) dateMatch=d.DATE>=new Date(from);
+if(to && d.DATE) dateMatch=dateMatch && d.DATE<=new Date(to);
+
+return dateMatch &&
+(!dept||d.DEPARTMENT===dept) &&
+(!dist||d.DISTRICT===dist) &&
+(!diag||d.DIAGNOSIS===diag) &&
+(!gen||d.GENDER===gen);
+});
+
+/* KPI */
+document.getElementById("totalDeaths").innerText=filtered.length;
+document.getElementById("maleDeaths").innerText=
+filtered.filter(d=>d.GENDER==="male").length;
+document.getElementById("femaleDeaths").innerText=
+filtered.filter(d=>d.GENDER==="female").length;
+
+let totalAdmissions=filtered.reduce((sum,d)=>sum+d.ADMISSIONS,0);
+let mortalityRate= totalAdmissions>0 ?
+((filtered.length/totalAdmissions)*100).toFixed(2) : 0;
+
+document.getElementById("mortalityRate").innerText=mortalityRate+"%";
+
+/* Charts */
+let deptGroup={},districtGroup={};
+filtered.forEach(d=>{
+if(d.DEPARTMENT)
+deptGroup[d.DEPARTMENT]=(deptGroup[d.DEPARTMENT]||0)+1;
+if(d.DISTRICT)
+districtGroup[d.DISTRICT]=(districtGroup[d.DISTRICT]||0)+1;
+});
+
+if(deptChart) deptChart.destroy();
+if(districtChart) districtChart.destroy();
+
+deptChart=new Chart(document.getElementById("deptChart"),{
+type:"bar",
+data:{
+labels:Object.keys(deptGroup),
+datasets:[{
+data:Object.values(deptGroup),
+backgroundColor:Object.keys(deptGroup).map((_,i)=>`hsl(${i*45},70%,55%)`)
+}]
+},
+options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+});
+
+districtChart=new Chart(document.getElementById("districtChart"),{
+type:"pie",
+data:{
+labels:Object.keys(districtGroup),
+datasets:[{
+data:Object.values(districtGroup),
+backgroundColor:Object.keys(districtGroup).map((_,i)=>`hsl(${i*45},70%,55%)`)
+}]
+},
+options:{responsive:true,plugins:{legend:{position:"bottom"}}}
+});
+}
+
+/* EXECUTIVE PDF */
+async function exportExecutivePDF(){
+
+const {jsPDF}=window.jspdf;
+const pdf=new jsPDF("p","mm","a4");
+
+/* PAGE 1 - SUMMARY */
+pdf.setFontSize(16);
+pdf.text("SADIQ ABBASI HOSPITAL, BAHAWALPUR",105,15,null,null,"center");
+pdf.setFontSize(12);
+pdf.text("Executive Mortality Report",105,22,null,null,"center");
+
+pdf.setFontSize(10);
+pdf.text("Generated: "+new Date().toLocaleString(),14,30);
+
+pdf.text("Total Deaths: "+totalDeaths.innerText,14,40);
+pdf.text("Male Deaths: "+maleDeaths.innerText,14,46);
+pdf.text("Female Deaths: "+femaleDeaths.innerText,14,52);
+pdf.text("Mortality Rate: "+mortalityRate.innerText,14,58);
+
+/* PAGE 2 - CHARTS */
+pdf.addPage();
+
+const deptCanvas=await html2canvas(document.getElementById("deptChart"));
+const distCanvas=await html2canvas(document.getElementById("districtChart"));
+
+pdf.addImage(deptCanvas.toDataURL("image/png"),"PNG",10,15,190,90);
+pdf.addImage(distCanvas.toDataURL("image/png"),"PNG",10,115,190,90);
+
+pdf.save("Executive_Mortality_Report.pdf");
+}
+
+</script>
+</body>
+</html>
