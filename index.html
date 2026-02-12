@@ -267,7 +267,8 @@ animation:spin 1s linear infinite;
 
 <script>
 
-const csvUrl="YOUR_GOOGLE_CSV_LINK_HERE";
+const csvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+
 let rawData=[];
 let chart;
 
@@ -283,27 +284,38 @@ now.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day
 setInterval(updateClock,1000);
 updateClock();
 
-/* ================= LOADER ================= */
-
-function showLoader(){document.getElementById("loader").style.visibility="visible";}
-function hideLoader(){document.getElementById("loader").style.visibility="hidden";}
-
 /* ================= UTILITIES ================= */
 
-function clean(v){return v?v.toString().trim():"";}
+function clean(v){ return v ? v.toString().trim() : ""; }
+
 function normalizeGender(g){
 g=clean(g).toLowerCase();
-if(g==="m")return"Male";
-if(g==="f")return"Female";
+if(g==="m"||g==="male") return "Male";
+if(g==="f"||g==="female") return "Female";
 return g.charAt(0).toUpperCase()+g.slice(1);
 }
-function parseDate(v){
-if(!v)return null;
-if(v.includes("/")){
-const p=v.split("/");
+
+function parseDate(value){
+if(!value) return null;
+value=clean(value);
+
+if(value.includes("/")){
+let p=value.split("/");
 return new Date(p[2],p[1]-1,p[0]);
 }
-return new Date(v);
+
+let d=new Date(value);
+return isNaN(d)?null:d;
+}
+
+/* ================= HEADER NORMALIZATION ================= */
+
+function normalizeRowKeys(row){
+let newRow={};
+Object.keys(row).forEach(k=>{
+newRow[clean(k).toLowerCase()]=row[k];
+});
+return newRow;
 }
 
 /* ================= DROPDOWN ================= */
@@ -311,11 +323,15 @@ return new Date(v);
 function populateDropdown(data,key,id,isGender=false){
 const select=document.getElementById(id);
 select.innerHTML="<option value=''>All</option>";
+
 let values=data.map(r=>clean(r[key])).filter(v=>v!=="");
-if(isGender)values=values.map(v=>normalizeGender(v));
+
+if(isGender) values=values.map(v=>normalizeGender(v));
+
 [...new Set(values)].sort().forEach(v=>{
 let o=document.createElement("option");
-o.value=v;o.textContent=v;
+o.value=v;
+o.textContent=v;
 select.appendChild(o);
 });
 }
@@ -336,15 +352,16 @@ const toDate=to?new Date(to):null;
 
 const filtered=rawData.filter(r=>{
 
-const deathDate=parseDate(r["Date of Death"]);
-const rowGender=normalizeGender(r["Gender"]);
+const deathDate=parseDate(r["date"]);
+const rowGender=normalizeGender(r["gender"]);
 
-if(fromDate && (!deathDate||deathDate<fromDate))return false;
-if(toDate && (!deathDate||deathDate>toDate))return false;
-if(dept && clean(r["Department"])!==dept)return false;
-if(dist && clean(r["District"])!==dist)return false;
-if(diag && clean(r["Diagnosis"])!==diag)return false;
-if(gender && rowGender!==gender)return false;
+if(fromDate && (!deathDate || deathDate<fromDate)) return false;
+if(toDate && (!deathDate || deathDate>toDate)) return false;
+
+if(dept && clean(r["department"])!==dept) return false;
+if(dist && clean(r["district"])!==dist) return false;
+if(diag && clean(r["diagnosis"])!==diag) return false;
+if(gender && rowGender!==gender) return false;
 
 return true;
 });
@@ -357,18 +374,20 @@ updateDashboard(filtered);
 function updateDashboard(data){
 
 document.getElementById("totalDeaths").innerText=data.length;
+
 document.getElementById("maleDeaths").innerText=
-data.filter(r=>normalizeGender(r["Gender"])==="Male").length;
+data.filter(r=>normalizeGender(r["gender"])==="Male").length;
+
 document.getElementById("femaleDeaths").innerText=
-data.filter(r=>normalizeGender(r["Gender"])==="Female").length;
+data.filter(r=>normalizeGender(r["gender"])==="Female").length;
 
 const deptCounts={};
 data.forEach(r=>{
-const d=clean(r["Department"])||"Unknown";
+const d=clean(r["department"])||"Unknown";
 deptCounts[d]=(deptCounts[d]||0)+1;
 });
 
-if(chart)chart.destroy();
+if(chart) chart.destroy();
 
 chart=new Chart(document.getElementById("deptChart"),{
 type:"bar",
@@ -393,7 +412,7 @@ scales:{y:{beginAtZero:true}}
 
 function loadData(){
 
-showLoader();
+document.getElementById("loader").style.visibility="visible";
 
 Papa.parse(csvUrl,{
 download:true,
@@ -401,24 +420,28 @@ header:true,
 skipEmptyLines:true,
 complete:function(res){
 
-rawData=res.data;
+if(!res.data || res.data.length===0){
+alert("No data loaded. Check Google Sheet link.");
+return;
+}
 
-populateDropdown(rawData,"Department","department");
-populateDropdown(rawData,"District","district");
-populateDropdown(rawData,"Diagnosis","diagnosis");
-populateDropdown(rawData,"Gender","gender",true);
+/* Normalize header keys */
+rawData=res.data.map(r=>normalizeRowKeys(r));
+
+populateDropdown(rawData,"department","department");
+populateDropdown(rawData,"district","district");
+populateDropdown(rawData,"diagnosis","diagnosis");
+populateDropdown(rawData,"gender","gender",true);
 
 updateDashboard(rawData);
 
-hideLoader();
+document.getElementById("loader").style.visibility="hidden";
+},
+error:function(err){
+alert("Error loading CSV. Check publishing settings.");
+console.error(err);
 }
 });
-}
-
-/* ================= EXPORT ================= */
-
-function exportPDF(){
-html2pdf().from(document.getElementById("dashboard")).save("Mortality_Dashboard.pdf");
 }
 
 /* ================= INIT ================= */
