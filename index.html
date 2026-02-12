@@ -10,28 +10,217 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
-body{margin:0;font-family:Segoe UI,sans-serif;background:#f4f7fb;}
-.header{text-align:center;padding:20px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.08);}
-.header img{height:80px;margin-bottom:10px;}
-.container{padding:20px;}
-.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:20px;}
-.filter-box{display:flex;flex-direction:column;}
-.filter-box label{font-weight:600;margin-bottom:5px;font-size:14px;}
-select,input{padding:8px;border-radius:6px;border:1px solid #ccc;font-size:14px;}
-.kpis{display:flex;flex-wrap:wrap;gap:15px;margin-bottom:20px;justify-content:center;}
-.kpi{flex:1;min-width:150px;background:#fff;padding:20px;border-radius:10px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
-.kpi h3{margin:0;font-size:16px;color:#555;}
-.kpi p{font-size:28px;font-weight:bold;margin-top:10px;color:#0a3d62;}
-.chart-container{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:20px;}
-.buttons{display:flex;justify-content:space-between;margin-top:10px;}
-button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;}
-.pdf-btn{background:#0a3d62;color:white;}
-.refresh-btn{background:#16a085;color:white;}
-.footer{text-align:center;padding:15px;font-size:14px;color:#555;}
-.footer a{text-decoration:none;color:#0a3d62;font-weight:600;}
+
+/* ================= GLOBAL ================= */
+
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#eaf3fb,#f8fbff);
+color:#2c3e50;
+}
+
+h2,h3{margin:5px 0}
+
+/* ================= HEADER ================= */
+
+.header{
+position:relative;
+text-align:center;
+padding:25px;
+background:white;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+border-bottom:4px solid #0a3d62;
+}
+
+.header img{
+height:85px;
+margin-bottom:10px;
+}
+
+/* CLOCK */
+.clock-box{
+position:absolute;
+right:25px;
+top:25px;
+text-align:right;
+background:#0a3d62;
+color:white;
+padding:12px 18px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+
+.clock-time{
+font-size:20px;
+font-weight:bold;
+letter-spacing:1px;
+}
+
+.clock-date{
+font-size:12px;
+opacity:0.9;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+padding:25px;
+}
+
+/* ================= FILTERS ================= */
+
+.filters{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:18px;
+margin-bottom:25px;
+}
+
+.filter-box{
+display:flex;
+flex-direction:column;
+}
+
+.filter-box label{
+font-weight:600;
+margin-bottom:6px;
+font-size:13px;
+}
+
+select,input{
+padding:9px;
+border-radius:8px;
+border:1px solid #d0d7e2;
+background:white;
+transition:0.3s;
+}
+
+select:focus,input:focus{
+outline:none;
+border-color:#0a3d62;
+box-shadow:0 0 6px rgba(10,61,98,0.2);
+}
+
+/* ================= KPI CARDS ================= */
+
+.kpis{
+display:flex;
+flex-wrap:wrap;
+gap:20px;
+justify-content:center;
+margin-bottom:30px;
+}
+
+.kpi{
+flex:1;
+min-width:200px;
+background:linear-gradient(135deg,#ffffff,#f1f7fd);
+padding:25px;
+border-radius:18px;
+text-align:center;
+box-shadow:0 6px 18px rgba(0,0,0,0.08);
+transition:0.3s;
+}
+
+.kpi:hover{
+transform:translateY(-4px);
+}
+
+.kpi h3{
+font-size:15px;
+color:#6c7a89;
+}
+
+.kpi p{
+font-size:34px;
+font-weight:bold;
+margin-top:10px;
+color:#0a3d62;
+}
+
+/* ================= CHART ================= */
+
+.chart-container{
+background:white;
+padding:25px;
+border-radius:18px;
+box-shadow:0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* ================= BUTTONS ================= */
+
+.buttons{
+display:flex;
+justify-content:space-between;
+margin-top:25px;
+}
+
+button{
+padding:12px 25px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-weight:600;
+font-size:14px;
+transition:0.3s;
+}
+
+.pdf-btn{
+background:#0a3d62;
+color:white;
+}
+
+.pdf-btn:hover{
+background:#082c48;
+}
+
+.refresh-btn{
+background:#16a085;
+color:white;
+}
+
+.refresh-btn:hover{
+background:#12876f;
+}
+
+/* ================= LOADER ================= */
+
+.loader-overlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(255,255,255,0.8);
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+visibility:hidden;
+}
+
+.spinner{
+width:60px;
+height:60px;
+border:6px solid #dbe6f2;
+border-top:6px solid #0a3d62;
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
 </style>
 </head>
 <body>
+
+<div class="loader-overlay" id="loader">
+<div class="spinner"></div>
+</div>
 
 <div id="dashboard">
 
@@ -39,6 +228,12 @@ button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weigh
 <img src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hXU">
 <h2>SADIQ ABBASI HOSPITAL, BAHAWALPUR</h2>
 <h3>Mortality Dashboard</h3>
+
+<div class="clock-box">
+<div class="clock-time" id="clockTime"></div>
+<div class="clock-date" id="clockDate"></div>
+</div>
+
 </div>
 
 <div class="container">
@@ -68,147 +263,166 @@ button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weigh
 </div>
 
 </div>
-
-<div class="footer">
-Developed By: <a href="https://www.linkedin.com/in/smus79" target="_blank">
-Software Engineer MUHAMMAD UMAIR SYED</a>
-</div>
-
 </div>
 
 <script>
 
 const csvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
-
 let rawData=[];
 let chart;
 
-/* ===== DATE PARSER ===== */
-function parseDate(value){
-    if(!value) return null;
-    if(value.includes("/")){
-        const p=value.split("/");
-        return new Date(p[2],p[1]-1,p[0]);
-    }
-    return new Date(value);
-}
+/* ================= CLOCK ================= */
 
-/* ===== GENDER NORMALIZER ===== */
+function updateClock(){
+const now=new Date();
+document.getElementById("clockTime").innerText=
+now.toLocaleTimeString();
+document.getElementById("clockDate").innerText=
+now.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+setInterval(updateClock,1000);
+updateClock();
+
+/* ================= LOADER ================= */
+
+function showLoader(){document.getElementById("loader").style.visibility="visible";}
+function hideLoader(){document.getElementById("loader").style.visibility="hidden";}
+
+/* ================= UTILITIES ================= */
+
+function clean(v){return v?v.toString().trim():"";}
 function normalizeGender(g){
-    if(!g) return "";
-    g=g.toLowerCase().trim();
-    if(g==="m") return "Male";
-    if(g==="f") return "Female";
-    return g.charAt(0).toUpperCase()+g.slice(1);
+g=clean(g).toLowerCase();
+if(g==="m")return"Male";
+if(g==="f")return"Female";
+return g.charAt(0).toUpperCase()+g.slice(1);
+}
+function parseDate(v){
+if(!v)return null;
+if(v.includes("/")){
+const p=v.split("/");
+return new Date(p[2],p[1]-1,p[0]);
+}
+return new Date(v);
 }
 
-/* ===== POPULATE DROPDOWN ===== */
-function populateDropdown(column,id,isGender=false){
-    const select=document.getElementById(id);
-    select.innerHTML="<option value=''>All</option>";
+/* ================= DROPDOWN ================= */
 
-    let values=rawData.map(r=>r[column]).filter(v=>v);
-
-    if(isGender) values=values.map(v=>normalizeGender(v));
-
-    const unique=[...new Set(values.map(v=>v.trim()))].sort();
-
-    unique.forEach(v=>{
-        const opt=document.createElement("option");
-        opt.value=v;
-        opt.textContent=v;
-        select.appendChild(opt);
-    });
+function populateDropdown(data,key,id,isGender=false){
+const select=document.getElementById(id);
+select.innerHTML="<option value=''>All</option>";
+let values=data.map(r=>clean(r[key])).filter(v=>v!=="");
+if(isGender)values=values.map(v=>normalizeGender(v));
+[...new Set(values)].sort().forEach(v=>{
+let o=document.createElement("option");
+o.value=v;o.textContent=v;
+select.appendChild(o);
+});
 }
 
-/* ===== APPLY FILTERS ===== */
+/* ================= FILTER ================= */
+
 function applyFilters(){
 
-    const from=document.getElementById("fromDate").value;
-    const to=document.getElementById("toDate").value;
-    const dept=document.getElementById("department").value;
-    const dist=document.getElementById("district").value;
-    const diag=document.getElementById("diagnosis").value;
-    const gender=document.getElementById("gender").value;
+const from=document.getElementById("fromDate").value;
+const to=document.getElementById("toDate").value;
+const dept=document.getElementById("department").value;
+const dist=document.getElementById("district").value;
+const diag=document.getElementById("diagnosis").value;
+const gender=document.getElementById("gender").value;
 
-    const fromDate=from?new Date(from):null;
-    const toDate=to?new Date(to):null;
+const fromDate=from?new Date(from):null;
+const toDate=to?new Date(to):null;
 
-    const filtered=rawData.filter(r=>{
+const filtered=rawData.filter(r=>{
 
-        const deathDate=parseDate(r["Date of Death"]);
-        const rowGender=normalizeGender(r["Gender"]);
+const deathDate=parseDate(r["Date of Death"]);
+const rowGender=normalizeGender(r["Gender"]);
 
-        if(fromDate && (!deathDate || deathDate<fromDate)) return false;
-        if(toDate && (!deathDate || deathDate>toDate)) return false;
+if(fromDate && (!deathDate||deathDate<fromDate))return false;
+if(toDate && (!deathDate||deathDate>toDate))return false;
+if(dept && clean(r["Department"])!==dept)return false;
+if(dist && clean(r["District"])!==dist)return false;
+if(diag && clean(r["Diagnosis"])!==diag)return false;
+if(gender && rowGender!==gender)return false;
 
-        if(dept && r["Department"]?.trim()!==dept) return false;
-        if(dist && r["District"]?.trim()!==dist) return false;
-        if(diag && r["Diagnosis"]?.trim()!==diag) return false;
-        if(gender && rowGender!==gender) return false;
+return true;
+});
 
-        return true;
-    });
-
-    document.getElementById("totalDeaths").innerText=filtered.length;
-    document.getElementById("maleDeaths").innerText=
-        filtered.filter(r=>normalizeGender(r["Gender"])==="Male").length;
-    document.getElementById("femaleDeaths").innerText=
-        filtered.filter(r=>normalizeGender(r["Gender"])==="Female").length;
-
-    const deptCounts={};
-    filtered.forEach(r=>{
-        const d=r["Department"]||"Unknown";
-        deptCounts[d]=(deptCounts[d]||0)+1;
-    });
-
-    if(chart) chart.destroy();
-
-    chart=new Chart(document.getElementById("deptChart"),{
-        type:"bar",
-        data:{
-            labels:Object.keys(deptCounts),
-            datasets:[{
-                data:Object.values(deptCounts),
-                backgroundColor:"#0a3d62"
-            }]
-        },
-        options:{
-            responsive:true,
-            scales:{y:{beginAtZero:true}},
-            plugins:{legend:{display:false}}
-        }
-    });
+updateDashboard(filtered);
 }
 
-/* ===== LOAD DATA ===== */
+/* ================= DASHBOARD ================= */
+
+function updateDashboard(data){
+
+document.getElementById("totalDeaths").innerText=data.length;
+document.getElementById("maleDeaths").innerText=
+data.filter(r=>normalizeGender(r["Gender"])==="Male").length;
+document.getElementById("femaleDeaths").innerText=
+data.filter(r=>normalizeGender(r["Gender"])==="Female").length;
+
+const deptCounts={};
+data.forEach(r=>{
+const d=clean(r["Department"])||"Unknown";
+deptCounts[d]=(deptCounts[d]||0)+1;
+});
+
+if(chart)chart.destroy();
+
+chart=new Chart(document.getElementById("deptChart"),{
+type:"bar",
+data:{
+labels:Object.keys(deptCounts),
+datasets:[{
+label:"Deaths",
+data:Object.values(deptCounts),
+backgroundColor:"#0a3d62",
+borderRadius:6
+}]
+},
+options:{
+responsive:true,
+plugins:{legend:{display:false}},
+scales:{y:{beginAtZero:true}}
+}
+});
+}
+
+/* ================= LOAD DATA ================= */
+
 function loadData(){
-    Papa.parse(csvUrl,{
-        download:true,
-        header:true,
-        skipEmptyLines:true,
-        complete:function(res){
-            rawData=res.data;
-            populateDropdown("Department","department");
-            populateDropdown("District","district");
-            populateDropdown("Diagnosis","diagnosis");
-            populateDropdown("Gender","gender",true);
-            applyFilters();
-        }
-    });
+
+showLoader();
+
+Papa.parse(csvUrl,{
+download:true,
+header:true,
+skipEmptyLines:true,
+complete:function(res){
+
+rawData=res.data;
+
+populateDropdown(rawData,"Department","department");
+populateDropdown(rawData,"District","district");
+populateDropdown(rawData,"Diagnosis","diagnosis");
+populateDropdown(rawData,"Gender","gender",true);
+
+updateDashboard(rawData);
+
+hideLoader();
+}
+});
 }
 
-/* ===== PDF EXPORT ===== */
+/* ================= EXPORT ================= */
+
 function exportPDF(){
-    html2pdf().from(document.getElementById("dashboard")).set({
-        margin:10,
-        filename:"Mortality_Dashboard.pdf",
-        html2canvas:{scale:2},
-        jsPDF:{unit:"mm",format:"a4"}
-    }).save();
+html2pdf().from(document.getElementById("dashboard")).save("Mortality_Dashboard.pdf");
 }
 
-/* ===== INIT ===== */
+/* ================= INIT ================= */
+
 loadData();
 document.querySelectorAll("select,input")
 .forEach(el=>el.addEventListener("change",applyFilters));
