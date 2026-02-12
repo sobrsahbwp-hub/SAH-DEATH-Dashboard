@@ -5,49 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sadiq Abbasi Hospital - Mortality Dashboard</title>
 
+<!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{
-    font-family: 'Segoe UI', sans-serif;
+    font-family:'Segoe UI',sans-serif;
     margin:0;
     background:#f4f8fc;
-    color:#1a1a1a;
 }
 header{
     text-align:center;
-    padding:10px;
+    padding:15px;
     background:white;
     box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
-.logo{
-    height:80px;
-}
-.top-bar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:10px 20px;
-}
-.clock{
-    font-weight:bold;
-    font-size:18px;
-}
-.weather{
-    font-size:14px;
-}
+.logo{height:80px;}
 .filters{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
     gap:15px;
     padding:20px;
-}
-.filters label{
-    font-weight:bold;
-    display:block;
-    margin-bottom:5px;
 }
 select,input{
     width:100%;
@@ -60,7 +41,6 @@ select,input{
     justify-content:center;
     gap:20px;
     flex-wrap:wrap;
-    padding:10px;
 }
 .kpi{
     background:white;
@@ -72,53 +52,31 @@ select,input{
 }
 .chart-container{
     width:90%;
-    max-width:800px;
+    max-width:900px;
     margin:20px auto;
-}
-footer{
-    text-align:center;
-    padding:10px;
-    background:#fff;
-    font-size:14px;
 }
 .buttons{
     display:flex;
     justify-content:space-between;
-    padding:10px 20px;
+    padding:15px;
 }
 button{
     padding:8px 15px;
     border:none;
     border-radius:6px;
-    cursor:pointer;
     background:#007BFF;
     color:white;
+    cursor:pointer;
 }
-button:hover{
-    opacity:0.9;
-}
-@media print{
-    body{background:white;}
-    .buttons,.filters,.top-bar{display:none;}
+button:hover{opacity:0.9;}
+footer{
+    text-align:center;
+    padding:10px;
+    background:#fff;
 }
 </style>
 </head>
 <body>
-
-<div class="top-bar">
-<div class="weather">
-<!-- Weather.com Embed -->
-<a class="weatherwidget-io" href="https://weather.com/en-PK/weather/today/l/Bahawalpur+Punjab" data-label_1="BAHAWALPUR" data-label_2="WEATHER" data-theme="pure">BAHAWALPUR WEATHER</a>
-<script>
-!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
-if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
-js.src='https://weatherwidget.io/js/widget.min.js';
-fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-</script>
-</div>
-
-<div class="clock" id="clock"></div>
-</div>
 
 <header>
 <img src="https://drive.google.com/uc?export=view&id=1Y5PbMKEFDgSk9CiSZOAdVyxRyAse6hXU" class="logo">
@@ -137,19 +95,19 @@ fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
 </div>
 <div>
 <label>Department</label>
-<select id="department"></select>
+<select id="department"><option value="">All</option></select>
 </div>
 <div>
 <label>District</label>
-<select id="district"></select>
+<select id="district"><option value="">All</option></select>
 </div>
 <div>
 <label>Diagnosis</label>
-<select id="diagnosis"></select>
+<select id="diagnosis"><option value="">All</option></select>
 </div>
 <div>
 <label>Gender</label>
-<select id="gender"></select>
+<select id="gender"><option value="">All</option></select>
 </div>
 <div>
 <label>Age Group</label>
@@ -161,7 +119,7 @@ fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
 <option>15 to 30 Years</option>
 <option>30 Years to 45 Years</option>
 <option>45 Years to 60 Years</option>
-<option>65 Years & above</option>
+<option>60 Years & above</option>
 </select>
 </div>
 </div>
@@ -192,61 +150,56 @@ fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
 
 <footer>
 Developed By: <a href="https://www.linkedin.com/in/smus79" target="_blank">
-Software Engineer MUHAMMAD UMAIR SYED</a> 
-(IT Officer, Sadiq Abbasi Hospital, Bahawalpur)
+Software Engineer MUHAMMAD UMAIR SYED</a>
 </footer>
 
 <script>
+
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+
 let rawData=[];
 let chart;
 
-function updateClock(){
-    document.getElementById("clock").innerHTML=
-    new Date().toLocaleString();
-}
-setInterval(updateClock,1000);
-updateClock();
+Papa.parse(sheetURL,{
+download:true,
+header:true,
+skipEmptyLines:true,
+complete:function(results){
 
-fetch(sheetURL)
-.then(res=>res.text())
-.then(csv=>{
-    const rows=csv.split("\n").map(r=>r.split(","));
-    const headers=rows[0];
-    rawData=rows.slice(1).map(r=>{
-        return{
-            DATE:new Date(r[3]),
-            GENDER:r[6],
-            DEPARTMENT:r[8],
-            DIAGNOSIS:r[20],
-            DISTRICT:r[21],
-            AGE:parseFloat(r[5])
-        }
-    });
-    populateFilters();
-    applyFilters();
+rawData=results.data.map(r=>({
+DATE:new Date(r["DATE"]),
+GENDER:r["GENDER"],
+DEPARTMENT:r["DEPARTMENT"],
+DIAGNOSIS:r["DIAGNOSIS"],
+DISTRICT:r["DISTRICT"],
+AGE:parseFloat(r["AGE"])
+}));
+
+populateFilters();
+applyFilters();
+}
 });
 
-function uniqueValues(key,element){
-    const values=[...new Set(rawData.map(d=>d[key]).filter(v=>v))];
-    element.innerHTML="<option value=''>All</option>";
-    values.forEach(v=>{
-        element.innerHTML+=`<option>${v}</option>`;
-    });
+function populateSelect(data,key,elementId){
+const element=document.getElementById(elementId);
+const values=[...new Set(data.map(d=>d[key]).filter(v=>v))].sort();
+values.forEach(v=>{
+element.innerHTML+=`<option value="${v}">${v}</option>`;
+});
 }
 
 function populateFilters(){
-    uniqueValues("DEPARTMENT",department);
-    uniqueValues("DISTRICT",district);
-    uniqueValues("DIAGNOSIS",diagnosis);
-    uniqueValues("GENDER",gender);
+populateSelect(rawData,"DEPARTMENT","department");
+populateSelect(rawData,"DISTRICT","district");
+populateSelect(rawData,"DIAGNOSIS","diagnosis");
+populateSelect(rawData,"GENDER","gender");
 }
 
 document.querySelectorAll("select,input").forEach(el=>{
-    el.addEventListener("change",applyFilters);
+el.addEventListener("change",applyFilters);
 });
 
-function ageFilter(age,group){
+function ageMatch(age,group){
 if(!group) return true;
 if(group=="Below 30 Days") return age<1/12;
 if(group=="1 Month to 1 Year") return age>=1/12 && age<1;
@@ -254,45 +207,55 @@ if(group=="1 Year to 15 Years") return age>=1 && age<15;
 if(group=="15 to 30 Years") return age>=15 && age<30;
 if(group=="30 Years to 45 Years") return age>=30 && age<45;
 if(group=="45 Years to 60 Years") return age>=45 && age<60;
-if(group=="65 Years & above") return age>=65;
+if(group=="60 Years & above") return age>=60;
+return true;
 }
 
 function applyFilters(){
+
 let filtered=rawData.filter(d=>{
-return(!fromDate.value||d.DATE>=new Date(fromDate.value))
-&&(!toDate.value||d.DATE<=new Date(toDate.value))
-&&(!department.value||d.DEPARTMENT==department.value)
-&&(!district.value||d.DISTRICT==district.value)
-&&(!diagnosis.value||d.DIAGNOSIS==diagnosis.value)
-&&(!gender.value||d.GENDER==gender.value)
-&&ageFilter(d.AGE,ageGroup.value);
+
+return (!fromDate.value || d.DATE>=new Date(fromDate.value))
+&&(!toDate.value || d.DATE<=new Date(toDate.value))
+&&(!department.value || d.DEPARTMENT===department.value)
+&&(!district.value || d.DISTRICT===district.value)
+&&(!diagnosis.value || d.DIAGNOSIS===diagnosis.value)
+&&(!gender.value || d.GENDER===gender.value)
+&&ageMatch(d.AGE,ageGroup.value);
+
 });
 
 document.getElementById("totalDeaths").innerText=filtered.length;
-document.getElementById("maleDeaths").innerText=filtered.filter(d=>d.GENDER=="Male").length;
-document.getElementById("femaleDeaths").innerText=filtered.filter(d=>d.GENDER=="Female").length;
+document.getElementById("maleDeaths").innerText=filtered.filter(d=>d.GENDER==="Male").length;
+document.getElementById("femaleDeaths").innerText=filtered.filter(d=>d.GENDER==="Female").length;
 
 const grouped={};
 filtered.forEach(d=>{
+if(!d.DEPARTMENT) return;
 grouped[d.DEPARTMENT]=(grouped[d.DEPARTMENT]||0)+1;
 });
 
 const labels=Object.keys(grouped);
-const data=Object.values(grouped);
+const values=Object.values(grouped);
 
 if(chart) chart.destroy();
+
 chart=new Chart(document.getElementById("deptChart"),{
 type:"bar",
 data:{
 labels:labels,
 datasets:[{
 label:"Deaths by Department",
-data:data,
-backgroundColor:["#007bff","#28a745","#ffc107","#dc3545","#6f42c1","#17a2b8"]
+data:values,
+backgroundColor:"#007BFF"
 }]
 },
-options:{responsive:true,plugins:{legend:{display:false}}}
+options:{
+responsive:true,
+plugins:{legend:{display:false}}
+}
 });
+
 }
 
 function exportPDF(){
@@ -300,10 +263,11 @@ html2canvas(document.body).then(canvas=>{
 const img=canvas.toDataURL("image/png");
 const {jsPDF}=window.jspdf;
 const pdf=new jsPDF("p","mm","a4");
-pdf.addImage(img,"PNG",5,5,200,287);
+pdf.addImage(img,"PNG",5,5,200,280);
 pdf.save("Mortality_Dashboard.pdf");
 });
 }
+
 </script>
 
 </body>
