@@ -3,374 +3,413 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sadiq Abbasi Hospital – Mortality Dashboard</title>
+<title>Hospital Mortality Dashboard</title>
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-<!-- PapaParse for CSV -->
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-<!-- Styles -->
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f9f9f9;
-    color: #333;
-  }
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background: #ffffff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-  #weather {
-    font-size: 14px;
-  }
-  #clock {
-    font-size: 18px;
-    font-weight: bold;
-  }
-  .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 20px;
-    background: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  }
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-    min-width: 150px;
-  }
-  .filter-group label {
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-  select, input[type="date"] {
-    padding: 6px;
-    font-size: 14px;
-  }
-  .kpis {
-    display: flex;
-    justify-content: space-around;
-    padding: 20px;
-    flex-wrap: wrap;
-  }
-  .kpi {
-    background: #fff;
-    padding: 15px 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    text-align: center;
-    margin: 10px;
-  }
-  .kpi h2 {
-    margin: 0;
-    font-size: 24px;
-    color: #007BFF;
-  }
-  .charts {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 20px;
-    gap: 30px;
-  }
-  canvas {
-    background: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  }
-  footer {
-    text-align: center;
-    padding: 15px;
-    background: #fff;
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
-    font-size: 14px;
-  }
-  footer a {
-    color: #007BFF;
-    text-decoration: none;
-  }
-  .bottom-buttons {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 20px;
-  }
-  button {
-    padding: 10px 20px;
-    font-size: 14px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #007BFF;
-    color: white;
-  }
-  @media (max-width: 768px) {
-    .filters, .charts, .kpis {
-      flex-direction: column;
-      align-items: center;
-    }
-    .filter-group {
-      min-width: 100%;
-    }
-    canvas {
-      width: 100% !important;
-    }
-  }
+body{
+    margin:0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background:#f2f6fa;
+}
+
+header{
+    background:#ffffff;
+    padding:15px;
+    text-align:center;
+    font-size:22px;
+    font-weight:600;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    position:relative;
+}
+
+#clock{
+    position:absolute;
+    right:20px;
+    top:18px;
+    font-size:14px;
+    color:#555;
+}
+
+.container{padding:20px;}
+
+.filters{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.filter-box{
+    display:flex;
+    flex-direction:column;
+    min-width:160px;
+}
+
+label{
+    font-size:12px;
+    font-weight:600;
+    margin-bottom:4px;
+}
+
+select,input{
+    padding:6px;
+    border-radius:6px;
+    border:1px solid #ccd6dd;
+}
+
+.kpis{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+    margin-bottom:30px;
+}
+
+.kpi{
+    background:#ffffff;
+    padding:18px;
+    width:200px;
+    text-align:center;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.kpi h2{
+    margin:0;
+    font-size:26px;
+    color:#0077b6;
+}
+
+.kpi p{
+    margin-top:6px;
+    font-size:13px;
+    color:#555;
+}
+
+.charts{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:40px;
+}
+
+canvas{
+    background:#ffffff;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    max-width:500px;
+}
+
+.bottom-buttons{
+    position:fixed;
+    bottom:15px;
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    padding:0 20px;
+}
+
+button{
+    padding:8px 16px;
+    border:none;
+    border-radius:6px;
+    background:#0077b6;
+    color:white;
+    cursor:pointer;
+    font-size:13px;
+}
+
+button:hover{background:#023e8a;}
+
+.footer{
+    margin-top:60px;
+    text-align:center;
+    padding:15px;
+    font-size:12px;
+    background:#ffffff;
+}
+
+.footer a{
+    color:#0077b6;
+    font-weight:600;
+    text-decoration:none;
+}
+
+@media(max-width:768px){
+    .charts{flex-direction:column;align-items:center;}
+}
 </style>
 </head>
+
 <body>
 
 <header>
-  <div id="weather">
-    <!-- Placeholder for AccuWeather Widget -->
-    <iframe src="https://www.accuweather.com/en/bypasswidget" frameborder="0" width="200" height="50"></iframe>
-  </div>
-  <div id="clock"></div>
+Hospital Mortality Dashboard
+<div id="clock"></div>
 </header>
 
-<section class="filters">
-  <div class="filter-group">
-    <label for="fromDate">From Date</label>
-    <input type="date" id="fromDate">
-  </div>
-  <div class="filter-group">
-    <label for="toDate">To Date</label>
-    <input type="date" id="toDate">
-  </div>
-  <div class="filter-group">
-    <label for="department">Department</label>
-    <select id="department"><option value="">All</option></select>
-  </div>
-  <div class="filter-group">
-    <label for="district">District</label>
-    <select id="district"><option value="">All</option></select>
-  </div>
-  <div class="filter-group">
-    <label for="diagnosis">Diagnosis</label>
-    <select id="diagnosis"><option value="">All</option></select>
-  </div>
-  <div class="filter-group">
-    <label for="gender">Gender</label>
-    <select id="gender"><option value="">All</option></select>
-  </div>
-  <div class="filter-group">
-    <label for="ageGroup">Age Group</label>
-    <select id="ageGroup">
-      <option value="">All</option>
-      <option value="Below 30 Days">Below 30 Days</option>
-      <option value="1 Month to 1 Year">1 Month to 1 Year</option>
-      <option value="1 Year to 15 Years">1 Year to 15 Years</option>
-      <option value="15 to 30 Years">15 to 30 Years</option>
-      <option value="30 to 45 Years">30 to 45 Years</option>
-      <option value="45 to 60 Years">45 to 60 Years</option>
-      <option value="60 Years & above">60 Years & above</option>
-    </select>
-  </div>
-</section>
+<div class="container" id="dashboard">
 
-<section class="kpis">
-  <div class="kpi">
-    <h2 id="totalDeaths">0</h2>
-    <p>Total Deaths</p>
-  </div>
-  <div class="kpi">
-    <h2 id="maleDeaths">0</h2>
-    <p>Total Male Deaths</p>
-  </div>
-  <div class="kpi">
-    <h2 id="femaleDeaths">0</h2>
-    <p>Total Female Deaths</p>
-  </div>
-</section>
+<div class="filters">
 
-<section class="charts">
-  <canvas id="departmentChart" width="400" height="300"></canvas>
-  <canvas id="districtChart" width="400" height="300"></canvas>
-</section>
-
-<div class="bottom-buttons">
-  <button onclick="generatePDF()">Executive PDF Summary</button>
-  <button onclick="location.reload()">Refresh</button>
+<div class="filter-box">
+<label>From Date</label>
+<input type="date" id="fromDate">
 </div>
 
-<footer>
-  Developed By: <a href="https://www.linkedin.com/in/smus79" target="_blank">Software Engineer MUHAMMAD UMAIR SYED (IT Officer, Sadiq Abbasi Hospital, Bahawalpur)</a>
-</footer>
+<div class="filter-box">
+<label>To Date</label>
+<input type="date" id="toDate">
+</div>
 
-<!-- Scripts -->
+<div class="filter-box">
+<label>Department</label>
+<select id="department"></select>
+</div>
+
+<div class="filter-box">
+<label>District</label>
+<select id="district"></select>
+</div>
+
+<div class="filter-box">
+<label>Diagnosis</label>
+<select id="diagnosis"></select>
+</div>
+
+<div class="filter-box">
+<label>Gender</label>
+<select id="gender"></select>
+</div>
+
+<div class="filter-box">
+<label>Age Group</label>
+<select id="ageGroup">
+<option value="">All</option>
+<option value="neonate">Below 30 Days</option>
+<option value="infant">1 Month to 1 Year</option>
+<option value="child">1 Year to 15 Years</option>
+<option value="young">15 to 30 Years</option>
+<option value="adult">30 to 45 Years</option>
+<option value="middle">45 to 60 Years</option>
+<option value="elder">65 Years & above</option>
+</select>
+</div>
+
+</div>
+
+<div class="kpis">
+<div class="kpi"><h2 id="totalDeaths">0</h2><p>Total Deaths</p></div>
+<div class="kpi"><h2 id="maleDeaths">0</h2><p>Total Male Deaths</p></div>
+<div class="kpi"><h2 id="femaleDeaths">0</h2><p>Total Female Deaths</p></div>
+</div>
+
+<div class="charts">
+<canvas id="deptChart"></canvas>
+<canvas id="districtChart"></canvas>
+</div>
+
+</div>
+
+<div class="bottom-buttons">
+<button onclick="generatePDF()">Executive PDF Summary</button>
+<button onclick="location.reload()">Refresh</button>
+</div>
+
+<div class="footer">
+Developed By:
+<a href="https://www.linkedin.com/in/smus79" target="_blank">
+Software Engineer MUHAMMAD UMAIR SYED (IT Officer, Sadiq Abbasi Hospital, Bahawalpur)
+</a>
+</div>
+
 <script>
-let rawData = [];
-let departmentChart, districtChart;
 
-// Clock
-function updateClock() {
-  const clock = document.getElementById('clock');
-  const now = new Date();
-  clock.textContent = now.toLocaleTimeString();
+const csvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+let rawData=[];
+let deptChart,districtChart;
+
+/* Clock */
+function updateClock(){
+    document.getElementById("clock").innerText=new Date().toLocaleString();
 }
-setInterval(updateClock, 1000);
+setInterval(updateClock,1000);
 updateClock();
 
-// Fetch Google Sheet CSV
-Papa.parse('https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv', {
-  download: true,
-  header: true,
-  complete: function(results) {
-    rawData = results.data;
-    populateFilters();
-    updateDashboard();
-  }
+/* Fetch CSV */
+Papa.parse(csvUrl,{
+    download:true,
+    header:true,
+    skipEmptyLines:true,
+    complete:function(results){
+        rawData=results.data;
+        populateFilters();
+        applyFilters();
+    }
 });
 
-// Populate drop-down filters
-function populateFilters() {
-  const deptSet = new Set();
-  const districtSet = new Set();
-  const diagnosisSet = new Set();
-  const genderSet = new Set();
+/* Robust Age Parser */
+function parseAgeToYears(ageValue){
 
-  rawData.forEach(row => {
-    if(row['DEPARTMENT']) deptSet.add(row['DEPARTMENT']);
-    if(row['DISTRICT']) districtSet.add(row['DISTRICT']);
-    if(row['DIAGNOSIS']) diagnosisSet.add(row['DIAGNOSIS']);
-    if(row['GENDER']) genderSet.add(row['GENDER']);
-  });
+    if(!ageValue) return null;
 
-  addOptions('department', deptSet);
-  addOptions('district', districtSet);
-  addOptions('diagnosis', diagnosisSet);
-  addOptions('gender', genderSet);
+    let val=ageValue.toString().trim().toLowerCase();
 
-  // Add event listeners
-  document.querySelectorAll('select, input[type="date"]').forEach(el => {
-    el.addEventListener('change', updateDashboard);
-  });
-}
+    let num=parseFloat(val.replace(/[^\d.]/g,''));
+    if(isNaN(num)) return null;
 
-// Add options to select
-function addOptions(selectId, values) {
-  const select = document.getElementById(selectId);
-  Array.from(values).sort().forEach(v => {
-    const option = document.createElement('option');
-    option.value = v;
-    option.textContent = v;
-    select.appendChild(option);
-  });
-}
-
-// Filter data based on inputs
-function getFilteredData() {
-  const fromDate = document.getElementById('fromDate').value;
-  const toDate = document.getElementById('toDate').value;
-  const department = document.getElementById('department').value;
-  const district = document.getElementById('district').value;
-  const diagnosis = document.getElementById('diagnosis').value;
-  const gender = document.getElementById('gender').value;
-  const ageGroup = document.getElementById('ageGroup').value;
-
-  return rawData.filter(row => {
-    let valid = true;
-
-    if(fromDate && row['DATE'] < fromDate) valid = false;
-    if(toDate && row['DATE'] > toDate) valid = false;
-    if(department && row['DEPARTMENT'] !== department) valid = false;
-    if(district && row['DISTRICT'] !== district) valid = false;
-    if(diagnosis && row['DIAGNOSIS'] !== diagnosis) valid = false;
-    if(gender && row['GENDER'] !== gender) valid = false;
-
-    // Age group filtering
-    if(ageGroup) {
-      const age = parseInt(row['AGE']);
-      switch(ageGroup) {
-        case 'Below 30 Days': if(age >= 1) valid = false; break;
-        case '1 Month to 1 Year': if(age < 1 || age > 12) valid = false; break;
-        case '1 Year to 15 Years': if(age < 1 || age > 15*12) valid = false; break;
-        case '15 to 30 Years': if(age < 15*12 || age > 30*12) valid = false; break;
-        case '30 to 45 Years': if(age < 30*12 || age > 45*12) valid = false; break;
-        case '45 to 60 Years': if(age < 45*12 || age > 60*12) valid = false; break;
-        case '60 Years & above': if(age < 60*12) valid = false; break;
-      }
+    if(val.includes("day") || val.includes("d")){
+        return num/365;
     }
 
-    return valid;
-  });
-}
-
-// Update KPIs and Charts
-function updateDashboard() {
-  const data = getFilteredData();
-
-  // KPIs
-  document.getElementById('totalDeaths').textContent = data.length;
-  document.getElementById('maleDeaths').textContent = data.filter(r => r['GENDER']=='Male').length;
-  document.getElementById('femaleDeaths').textContent = data.filter(r => r['GENDER']=='Female').length;
-
-  // Department Chart
-  const deptCounts = {};
-  data.forEach(r => {
-    const dept = r['DEPARTMENT'] || 'Unknown';
-    deptCounts[dept] = (deptCounts[dept] || 0) + 1;
-  });
-  const deptLabels = Object.keys(deptCounts);
-  const deptData = Object.values(deptCounts);
-
-  if(departmentChart) departmentChart.destroy();
-  const ctxDept = document.getElementById('departmentChart').getContext('2d');
-  departmentChart = new Chart(ctxDept, {
-    type: 'bar',
-    data: {
-      labels: deptLabels,
-      datasets: [{
-        label: 'Deaths by Department',
-        data: deptData,
-        backgroundColor: deptLabels.map(() => `hsl(${Math.random()*360}, 70%, 60%)`)
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } }
+    if(val.includes("month") || val.includes("m")){
+        return num/12;
     }
-  });
 
-  // District Chart
-  const distCounts = {};
-  data.forEach(r => {
-    const dist = r['DISTRICT'] || 'Unknown';
-    distCounts[dist] = (distCounts[dist] || 0) + 1;
-  });
-  const distLabels = Object.keys(distCounts);
-  const distData = Object.values(distCounts);
+    if(val.includes("year") || val.includes("y")){
+        return num;
+    }
 
-  if(districtChart) districtChart.destroy();
-  const ctxDist = document.getElementById('districtChart').getContext('2d');
-  districtChart = new Chart(ctxDist, {
-    type: 'pie',
-    data: {
-      labels: distLabels,
-      datasets: [{
-        label: 'Deaths by District',
-        data: distData,
-        backgroundColor: distLabels.map(() => `hsl(${Math.random()*360}, 70%, 60%)`)
-      }]
-    },
-    options: { responsive: true }
-  });
+    return num; 
 }
 
-// PDF Generation Placeholder
-function generatePDF() {
-  alert('PDF Generation feature can be implemented with html2pdf or jsPDF library.');
+/* Age Group Logic */
+function ageGroupMatch(row){
+    let group=document.getElementById("ageGroup").value;
+    if(!group) return true;
+
+    let age=parseAgeToYears(row["AGE"]);
+    if(age===null) return true;
+
+    switch(group){
+        case "neonate": return age < (30/365);
+        case "infant": return age >= (30/365) && age < 1;
+        case "child": return age >=1 && age <=15;
+        case "young": return age >15 && age <=30;
+        case "adult": return age >30 && age <=45;
+        case "middle": return age >45 && age <=60;
+        case "elder": return age >=65;
+        default: return true;
+    }
 }
+
+/* Filter Utilities */
+function uniqueValues(col){
+    return [...new Set(rawData.map(r=>r[col]).filter(v=>v))].sort();
+}
+
+function fillDropdown(id,col){
+    let select=document.getElementById(id);
+    select.innerHTML="<option value=''>All</option>";
+    uniqueValues(col).forEach(v=>{
+        let opt=document.createElement("option");
+        opt.text=v;
+        select.add(opt);
+    });
+}
+
+function populateFilters(){
+    fillDropdown("department","DEPARTMENT");
+    fillDropdown("district","DISTRICT");
+    fillDropdown("diagnosis","DIAGNOSIS");
+    fillDropdown("gender","GENDER");
+}
+
+document.querySelectorAll("select,input").forEach(el=>{
+    el.addEventListener("change",applyFilters);
+});
+
+/* Apply Filters */
+function applyFilters(){
+
+    let from=document.getElementById("fromDate").value;
+    let to=document.getElementById("toDate").value;
+
+    let filtered=rawData.filter(row=>{
+
+        let date=new Date(row["DATE"]);
+        if(from && date < new Date(from)) return false;
+        if(to && date > new Date(to)) return false;
+
+        if(document.getElementById("department").value && row["DEPARTMENT"]!==document.getElementById("department").value) return false;
+        if(document.getElementById("district").value && row["DISTRICT"]!==document.getElementById("district").value) return false;
+        if(document.getElementById("diagnosis").value && row["DIAGNOSIS"]!==document.getElementById("diagnosis").value) return false;
+        if(document.getElementById("gender").value && row["GENDER"]!==document.getElementById("gender").value) return false;
+
+        if(!ageGroupMatch(row)) return false;
+
+        return true;
+    });
+
+    updateKPIs(filtered);
+    drawCharts(filtered);
+}
+
+/* KPI Update */
+function updateKPIs(data){
+    document.getElementById("totalDeaths").innerText=data.length;
+    document.getElementById("maleDeaths").innerText=data.filter(r=>r["GENDER"]==="Male").length;
+    document.getElementById("femaleDeaths").innerText=data.filter(r=>r["GENDER"]==="Female").length;
+}
+
+/* Grouping */
+function groupBy(data,key){
+    return data.reduce((acc,row)=>{
+        acc[row[key]]=(acc[row[key]]||0)+1;
+        return acc;
+    },{});
+}
+
+/* Charts */
+function drawCharts(data){
+
+    let deptData=groupBy(data,"DEPARTMENT");
+    let distData=groupBy(data,"DISTRICT");
+
+    if(deptChart) deptChart.destroy();
+    if(districtChart) districtChart.destroy();
+
+    deptChart=new Chart(document.getElementById("deptChart"),{
+        type:"bar",
+        data:{
+            labels:Object.keys(deptData),
+            datasets:[{
+                data:Object.values(deptData),
+                backgroundColor:["#0077b6","#0096c7","#00b4d8","#48cae4","#90e0ef","#ade8f4","#caf0f8"]
+            }]
+        },
+        options:{
+            plugins:{legend:{display:false}},
+            responsive:true
+        }
+    });
+
+    districtChart=new Chart(document.getElementById("districtChart"),{
+        type:"pie",
+        data:{
+            labels:Object.keys(distData),
+            datasets:[{
+                data:Object.values(distData),
+                backgroundColor:["#ff6b6b","#feca57","#48dbfb","#1dd1a1","#5f27cd","#ee5253","#ff9f43"]
+            }]
+        },
+        options:{responsive:true}
+    });
+}
+
+/* PDF */
+function generatePDF(){
+    html2pdf().from(document.getElementById("dashboard"))
+    .set({margin:0.5, filename:"Executive_Mortality_Summary.pdf"})
+    .save();
+}
+
 </script>
-
 </body>
 </html>
