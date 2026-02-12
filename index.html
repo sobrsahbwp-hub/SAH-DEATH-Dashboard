@@ -1,148 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hospital Mortality Dashboard</title>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{
+    font-family: Arial, sans-serif;
     margin:0;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background:#f2f6fa;
+    background:#f4f7fb;
 }
-
 header{
-    background:#ffffff;
-    padding:15px;
     text-align:center;
-    font-size:22px;
-    font-weight:600;
-    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    padding:15px;
+    background:#ffffff;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
     position:relative;
 }
-
 #clock{
     position:absolute;
     right:20px;
-    top:18px;
-    font-size:14px;
-    color:#555;
+    top:20px;
+    font-weight:bold;
+    color:#2c3e50;
 }
-
-.container{padding:20px;}
-
+.container{
+    padding:15px;
+}
 .filters{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
     gap:15px;
-    margin-bottom:25px;
+    margin-bottom:20px;
 }
-
-.filter-box{
+.filter-group{
     display:flex;
     flex-direction:column;
-    min-width:160px;
 }
-
 label{
-    font-size:12px;
-    font-weight:600;
-    margin-bottom:4px;
+    font-weight:bold;
+    margin-bottom:5px;
 }
-
 select,input{
-    padding:6px;
-    border-radius:6px;
-    border:1px solid #ccd6dd;
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:5px;
 }
-
 .kpis{
     display:flex;
-    justify-content:center;
-    gap:20px;
     flex-wrap:wrap;
-    margin-bottom:30px;
+    gap:15px;
+    justify-content:center;
+    margin-bottom:20px;
 }
-
 .kpi{
-    background:#ffffff;
-    padding:18px;
-    width:200px;
-    text-align:center;
+    background:white;
+    padding:20px;
     border-radius:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    flex:1 1 200px;
+    text-align:center;
 }
-
-.kpi h2{
-    margin:0;
-    font-size:26px;
-    color:#0077b6;
-}
-
-.kpi p{
-    margin-top:6px;
-    font-size:13px;
-    color:#555;
-}
-
-.charts{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:40px;
-}
-
 canvas{
-    background:#ffffff;
-    padding:15px;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
-    max-width:500px;
+    background:white;
+    padding:10px;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    margin:20px auto;
+    display:block;
+    max-width:700px;
 }
-
-.bottom-buttons{
-    position:fixed;
-    bottom:15px;
-    width:100%;
+.footer{
+    text-align:center;
+    padding:15px;
+    font-size:14px;
+}
+.buttons{
     display:flex;
     justify-content:space-between;
-    padding:0 20px;
-}
-
-button{
-    padding:8px 16px;
-    border:none;
-    border-radius:6px;
-    background:#0077b6;
-    color:white;
-    cursor:pointer;
-    font-size:13px;
-}
-
-button:hover{background:#023e8a;}
-
-.footer{
-    margin-top:60px;
-    text-align:center;
     padding:15px;
-    font-size:12px;
-    background:#ffffff;
 }
-
-.footer a{
-    color:#0077b6;
-    font-weight:600;
-    text-decoration:none;
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    font-weight:bold;
 }
-
-@media(max-width:768px){
-    .charts{flex-direction:column;align-items:center;}
+.pdf-btn{ background:#3498db; color:white; }
+.refresh-btn{ background:#2ecc71; color:white; }
+@media(max-width:600px){
+    .buttons{ flex-direction:column; gap:10px;}
 }
 </style>
 </head>
@@ -150,80 +101,77 @@ button:hover{background:#023e8a;}
 <body>
 
 <header>
-Hospital Mortality Dashboard
+<h2>Hospital Mortality Dashboard</h2>
 <div id="clock"></div>
 </header>
 
-<div class="container" id="dashboard">
+<div class="container">
 
 <div class="filters">
-
-<div class="filter-box">
+<div class="filter-group">
 <label>From Date</label>
 <input type="date" id="fromDate">
 </div>
 
-<div class="filter-box">
+<div class="filter-group">
 <label>To Date</label>
 <input type="date" id="toDate">
 </div>
 
-<div class="filter-box">
-<label>Department</label>
+<div class="filter-group">
+<label>DEPARTMENT</label>
 <select id="department"></select>
 </div>
 
-<div class="filter-box">
-<label>District</label>
+<div class="filter-group">
+<label>DISTRICT</label>
 <select id="district"></select>
 </div>
 
-<div class="filter-box">
-<label>Diagnosis</label>
+<div class="filter-group">
+<label>DIAGNOSIS</label>
 <select id="diagnosis"></select>
 </div>
 
-<div class="filter-box">
-<label>Gender</label>
+<div class="filter-group">
+<label>GENDER</label>
 <select id="gender"></select>
 </div>
 
-<div class="filter-box">
-<label>Age Group</label>
+<div class="filter-group">
+<label>AGE GROUP</label>
 <select id="ageGroup">
 <option value="">All</option>
-<option value="neonate">Below 30 Days</option>
-<option value="infant">1 Month to 1 Year</option>
-<option value="child">1 Year to 15 Years</option>
-<option value="young">15 to 30 Years</option>
-<option value="adult">30 to 45 Years</option>
-<option value="middle">45 to 60 Years</option>
-<option value="elder">65 Years & above</option>
+<option>Below 30 Days</option>
+<option>1 Month to 1 Year</option>
+<option>1 Year to 15 Years</option>
+<option>15 to 30 Years</option>
+<option>30 Years to 45 Years</option>
+<option>45 Years to 60 Years</option>
+<option>65 Years & above</option>
 </select>
 </div>
 
 </div>
 
 <div class="kpis">
-<div class="kpi"><h2 id="totalDeaths">0</h2><p>Total Deaths</p></div>
-<div class="kpi"><h2 id="maleDeaths">0</h2><p>Total Male Deaths</p></div>
-<div class="kpi"><h2 id="femaleDeaths">0</h2><p>Total Female Deaths</p></div>
+<div class="kpi"><h3>Total Deaths</h3><h2 id="totalDeaths">0</h2></div>
+<div class="kpi"><h3>Total Male Deaths</h3><h2 id="maleDeaths">0</h2></div>
+<div class="kpi"><h3>Total Female Deaths</h3><h2 id="femaleDeaths">0</h2></div>
 </div>
 
-<div class="charts">
 <canvas id="deptChart"></canvas>
 <canvas id="districtChart"></canvas>
+
+<div class="buttons">
+<button class="pdf-btn" onclick="generatePDF()">Executive PDF Summary</button>
+<button class="refresh-btn" onclick="location.reload()">Refresh</button>
 </div>
 
-</div>
-
-<div class="bottom-buttons">
-<button onclick="generatePDF()">Executive PDF Summary</button>
-<button onclick="location.reload()">Refresh</button>
 </div>
 
 <div class="footer">
-Developed By:
+Developed By: 
 <a href="https://www.linkedin.com/in/smus79" target="_blank">
 Software Engineer MUHAMMAD UMAIR SYED (IT Officer, Sadiq Abbasi Hospital, Bahawalpur)
 </a>
@@ -231,185 +179,148 @@ Software Engineer MUHAMMAD UMAIR SYED (IT Officer, Sadiq Abbasi Hospital, Bahawa
 
 <script>
 
-const csvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
+
 let rawData=[];
 let deptChart,districtChart;
 
-/* Clock */
 function updateClock(){
     document.getElementById("clock").innerText=new Date().toLocaleString();
 }
 setInterval(updateClock,1000);
-updateClock();
 
-/* Fetch CSV */
-Papa.parse(csvUrl,{
+Papa.parse(sheetURL,{
     download:true,
     header:true,
-    skipEmptyLines:true,
     complete:function(results){
         rawData=results.data;
-        populateFilters();
+        populateDropdowns();
         applyFilters();
     }
 });
 
-/* Robust Age Parser */
-function parseAgeToYears(ageValue){
-
-    if(!ageValue) return null;
-
-    let val=ageValue.toString().trim().toLowerCase();
-
-    let num=parseFloat(val.replace(/[^\d.]/g,''));
-    if(isNaN(num)) return null;
-
-    if(val.includes("day") || val.includes("d")){
-        return num/365;
-    }
-
-    if(val.includes("month") || val.includes("m")){
-        return num/12;
-    }
-
-    if(val.includes("year") || val.includes("y")){
-        return num;
-    }
-
-    return num; 
+function uniqueValues(data,key){
+    return [...new Set(data.map(row=>row[key]).filter(v=>v))];
 }
 
-/* Age Group Logic */
-function ageGroupMatch(row){
-    let group=document.getElementById("ageGroup").value;
-    if(!group) return true;
-
-    let age=parseAgeToYears(row["AGE"]);
-    if(age===null) return true;
-
-    switch(group){
-        case "neonate": return age < (30/365);
-        case "infant": return age >= (30/365) && age < 1;
-        case "child": return age >=1 && age <=15;
-        case "young": return age >15 && age <=30;
-        case "adult": return age >30 && age <=45;
-        case "middle": return age >45 && age <=60;
-        case "elder": return age >=65;
-        default: return true;
-    }
+function populateDropdowns(){
+    populate("department","DEPARTMENT");
+    populate("district","DISTRICT");
+    populate("diagnosis","DIAGNOSIS");
+    populate("gender","GENDER");
 }
 
-/* Filter Utilities */
-function uniqueValues(col){
-    return [...new Set(rawData.map(r=>r[col]).filter(v=>v))].sort();
-}
-
-function fillDropdown(id,col){
+function populate(id,key){
     let select=document.getElementById(id);
     select.innerHTML="<option value=''>All</option>";
-    uniqueValues(col).forEach(v=>{
+    uniqueValues(rawData,key).forEach(val=>{
         let opt=document.createElement("option");
-        opt.text=v;
-        select.add(opt);
+        opt.value=val;
+        opt.textContent=val;
+        select.appendChild(opt);
     });
 }
 
-function populateFilters(){
-    fillDropdown("department","DEPARTMENT");
-    fillDropdown("district","DISTRICT");
-    fillDropdown("diagnosis","DIAGNOSIS");
-    fillDropdown("gender","GENDER");
+function getAgeGroup(age){
+    age=parseFloat(age);
+    if(age<0.1) return "Below 30 Days";
+    if(age>=0.1 && age<1) return "1 Month to 1 Year";
+    if(age>=1 && age<15) return "1 Year to 15 Years";
+    if(age>=15 && age<30) return "15 to 30 Years";
+    if(age>=30 && age<45) return "30 Years to 45 Years";
+    if(age>=45 && age<60) return "45 Years to 60 Years";
+    if(age>=65) return "65 Years & above";
+    return "";
+}
+
+function applyFilters(){
+
+let fromDate=document.getElementById("fromDate").value;
+let toDate=document.getElementById("toDate").value;
+let department=document.getElementById("department").value;
+let district=document.getElementById("district").value;
+let diagnosis=document.getElementById("diagnosis").value;
+let gender=document.getElementById("gender").value;
+let ageGroup=document.getElementById("ageGroup").value;
+
+let filtered=rawData.filter(row=>{
+    let date=new Date(row["DATE"]);
+    if(fromDate && date<new Date(fromDate)) return false;
+    if(toDate && date>new Date(toDate)) return false;
+    if(department && row["DEPARTMENT"]!==department) return false;
+    if(district && row["DISTRICT"]!==district) return false;
+    if(diagnosis && row["DIAGNOSIS"]!==diagnosis) return false;
+    if(gender && row["GENDER"]!==gender) return false;
+    if(ageGroup && getAgeGroup(row["AGE"])!==ageGroup) return false;
+    return true;
+});
+
+updateKPIs(filtered);
+drawCharts(filtered);
+}
+
+function updateKPIs(data){
+    document.getElementById("totalDeaths").innerText=data.length;
+    document.getElementById("maleDeaths").innerText=data.filter(d=>d.GENDER==="Male").length;
+    document.getElementById("femaleDeaths").innerText=data.filter(d=>d.GENDER==="Female").length;
+}
+
+function groupBy(data,key){
+    let obj={};
+    data.forEach(d=>{
+        obj[d[key]]=(obj[d[key]]||0)+1;
+    });
+    return obj;
+}
+
+function drawCharts(data){
+
+if(deptChart) deptChart.destroy();
+if(districtChart) districtChart.destroy();
+
+let deptData=groupBy(data,"DEPARTMENT");
+let districtData=groupBy(data,"DISTRICT");
+
+deptChart=new Chart(document.getElementById("deptChart"),{
+type:"bar",
+data:{
+labels:Object.keys(deptData),
+datasets:[{
+data:Object.values(deptData),
+backgroundColor:["#3498db","#2ecc71","#9b59b6","#e74c3c","#f1c40f","#1abc9c"]
+}]
+},
+options:{responsive:true,plugins:{legend:{display:false}}}
+});
+
+districtChart=new Chart(document.getElementById("districtChart"),{
+type:"pie",
+data:{
+labels:Object.keys(districtData),
+datasets:[{
+data:Object.values(districtData),
+backgroundColor:["#8e44ad","#16a085","#c0392b","#2980b9","#f39c12","#27ae60"]
+}]
+},
+options:{responsive:true}
+});
 }
 
 document.querySelectorAll("select,input").forEach(el=>{
-    el.addEventListener("change",applyFilters);
+el.addEventListener("change",applyFilters);
 });
 
-/* Apply Filters */
-function applyFilters(){
-
-    let from=document.getElementById("fromDate").value;
-    let to=document.getElementById("toDate").value;
-
-    let filtered=rawData.filter(row=>{
-
-        let date=new Date(row["DATE"]);
-        if(from && date < new Date(from)) return false;
-        if(to && date > new Date(to)) return false;
-
-        if(document.getElementById("department").value && row["DEPARTMENT"]!==document.getElementById("department").value) return false;
-        if(document.getElementById("district").value && row["DISTRICT"]!==document.getElementById("district").value) return false;
-        if(document.getElementById("diagnosis").value && row["DIAGNOSIS"]!==document.getElementById("diagnosis").value) return false;
-        if(document.getElementById("gender").value && row["GENDER"]!==document.getElementById("gender").value) return false;
-
-        if(!ageGroupMatch(row)) return false;
-
-        return true;
-    });
-
-    updateKPIs(filtered);
-    drawCharts(filtered);
-}
-
-/* KPI Update */
-function updateKPIs(data){
-    document.getElementById("totalDeaths").innerText=data.length;
-    document.getElementById("maleDeaths").innerText=data.filter(r=>r["GENDER"]==="Male").length;
-    document.getElementById("femaleDeaths").innerText=data.filter(r=>r["GENDER"]==="Female").length;
-}
-
-/* Grouping */
-function groupBy(data,key){
-    return data.reduce((acc,row)=>{
-        acc[row[key]]=(acc[row[key]]||0)+1;
-        return acc;
-    },{});
-}
-
-/* Charts */
-function drawCharts(data){
-
-    let deptData=groupBy(data,"DEPARTMENT");
-    let distData=groupBy(data,"DISTRICT");
-
-    if(deptChart) deptChart.destroy();
-    if(districtChart) districtChart.destroy();
-
-    deptChart=new Chart(document.getElementById("deptChart"),{
-        type:"bar",
-        data:{
-            labels:Object.keys(deptData),
-            datasets:[{
-                data:Object.values(deptData),
-                backgroundColor:["#0077b6","#0096c7","#00b4d8","#48cae4","#90e0ef","#ade8f4","#caf0f8"]
-            }]
-        },
-        options:{
-            plugins:{legend:{display:false}},
-            responsive:true
-        }
-    });
-
-    districtChart=new Chart(document.getElementById("districtChart"),{
-        type:"pie",
-        data:{
-            labels:Object.keys(distData),
-            datasets:[{
-                data:Object.values(distData),
-                backgroundColor:["#ff6b6b","#feca57","#48dbfb","#1dd1a1","#5f27cd","#ee5253","#ff9f43"]
-            }]
-        },
-        options:{responsive:true}
-    });
-}
-
-/* PDF */
-function generatePDF(){
-    html2pdf().from(document.getElementById("dashboard"))
-    .set({margin:0.5, filename:"Executive_Mortality_Summary.pdf"})
-    .save();
+async function generatePDF(){
+const { jsPDF } = window.jspdf;
+let doc=new jsPDF();
+doc.text("Hospital Mortality Executive Summary",20,20);
+doc.text("Total Deaths: "+document.getElementById("totalDeaths").innerText,20,40);
+doc.text("Male Deaths: "+document.getElementById("maleDeaths").innerText,20,50);
+doc.text("Female Deaths: "+document.getElementById("femaleDeaths").innerText,20,60);
+doc.save("Mortality_Summary.pdf");
 }
 
 </script>
+
 </body>
 </html>
