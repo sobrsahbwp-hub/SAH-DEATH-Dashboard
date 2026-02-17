@@ -215,6 +215,9 @@ button{
 <div class="chart-box">
 <canvas id="districtChart"></canvas>
 </div>
+<div class="chart-box" style="max-width:100%;">
+<canvas id="ageChart"></canvas>
+</div>
 </div>
 
 <div class="buttons">
@@ -236,7 +239,7 @@ Software Engineer MUHAMMAD UMAIR SYED (IT Officer, Sadiq Abbasi Hospital, Bahawa
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBuiujol-M_LYK9qLBtaHeAsQtqW8xvJqyZxwRee5yRIK6wHj4HrISYzCE5LxucL59C/pub?gid=801410960&single=true&output=csv";
 
 let rawData=[];
-let deptChart,districtChart;
+let deptChart,districtChart,agechart;
 
 /* ---------------- CLOCK ---------------- */
 function updateClock(){
@@ -419,6 +422,61 @@ data:districtData.values,
 backgroundColor:districtColors,
 borderRadius:6
 }]
+/* ----- AGE GROUP ----- */
+
+if(ageChart){
+ageChart.destroy();
+ageChart=null;
+}
+
+const ageGroupsList=[
+"Below 30 Days",
+"1 Month to 1 Year",
+"1 Year to 15 Years",
+"15 to 30 Years",
+"30 Years to 45 Years",
+"45 Years to 60 Years",
+"65 Years & above"
+];
+
+let ageCounts={};
+
+ageGroupsList.forEach(group=>{
+ageCounts[group]=0;
+});
+
+data.forEach(row=>{
+let group=getAgeGroup(row["AGE"]);
+if(ageCounts.hasOwnProperty(group)){
+ageCounts[group]++;
+}
+});
+
+let ageLabels=ageGroupsList;
+let ageValues=ageGroupsList.map(g=>ageCounts[g]);
+
+let ageColors=generateColors(ageLabels.length);
+
+ageChart=new Chart(document.getElementById("ageChart"),{
+type:"bar",
+data:{
+labels:ageLabels,
+datasets:[{
+label:"Deaths by Age Group",
+data:ageValues,
+backgroundColor:ageColors,
+borderRadius:6
+}]
+},
+options:{
+responsive:true,
+plugins:{legend:{display:false}},
+scales:{
+y:{beginAtZero:true}
+}
+},
+plugins:[barValuePlugin]
+});
 },
 options:{
 responsive:true,
