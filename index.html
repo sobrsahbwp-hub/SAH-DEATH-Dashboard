@@ -303,8 +303,8 @@ drawCharts(filtered);
 
 function updateKPIs(data){
 document.getElementById("totalDeaths").innerText=data.length;
-document.getElementById("maleDeaths").innerText=data.filter(d=>d.GENDER && d.GENDER.toLowerCase()==="male").length;
-document.getElementById("femaleDeaths").innerText=data.filter(d=>d.GENDER && d.GENDER.toLowerCase()==="female").length;
+document.getElementById("maleDeaths").innerText=data.filter(d=>d.GENDER?.toLowerCase()==="male").length;
+document.getElementById("femaleDeaths").innerText=data.filter(d=>d.GENDER?.toLowerCase()==="female").length;
 }
 
 function groupData(data,key){
@@ -315,6 +315,58 @@ obj[val]=(obj[val]||0)+1;
 });
 return obj;
 }
+
+/* ---------- Custom Plugin for Labels & Center Text ---------- */
+
+const customLabelsPlugin = {
+id: 'customLabelsPlugin',
+afterDatasetsDraw(chart, args, pluginOptions) {
+
+const {ctx} = chart;
+ctx.save();
+
+if(chart.config.type === "bar"){
+chart.data.datasets.forEach((dataset, i)=>{
+chart.getDatasetMeta(i).data.forEach((bar, index)=>{
+let value = dataset.data[index];
+ctx.fillStyle = "#000";
+ctx.font = "bold 12px Arial";
+ctx.textAlign = "center";
+ctx.fillText(value, bar.x, bar.y - 5);
+});
+});
+}
+
+if(chart.config.type === "pie"){
+
+let dataset = chart.data.datasets[0];
+let total = dataset.data.reduce((a,b)=>a+b,0);
+
+chart.getDatasetMeta(0).data.forEach((slice, i)=>{
+let value = dataset.data[i];
+let percentage = ((value/total)*100).toFixed(1)+"%";
+let pos = slice.tooltipPosition();
+
+ctx.fillStyle="#fff";
+ctx.font="bold 12px Arial";
+ctx.textAlign="center";
+ctx.fillText(value+" ("+percentage+")",pos.x,pos.y);
+});
+
+// Total in center
+let width = chart.width;
+let height = chart.height;
+
+ctx.fillStyle="#000";
+ctx.font="bold 18px Arial";
+ctx.textAlign="center";
+ctx.fillText("Total", width/2, height/2 - 10);
+ctx.fillText(total, width/2, height/2 + 15);
+}
+
+ctx.restore();
+}
+};
 
 function drawCharts(data){
 
@@ -330,10 +382,14 @@ data:{
 labels:Object.keys(dept),
 datasets:[{
 data:Object.values(dept),
-backgroundColor:["#007bff","#28a745","#ffc107","#dc3545","#6f42c1","#20c997"]
+backgroundColor:"#007bff"
 }]
 },
-options:{responsive:true,plugins:{legend:{display:false}}}
+options:{
+responsive:true,
+plugins:{legend:{display:false}}
+},
+plugins:[customLabelsPlugin]
 });
 
 districtChart=new Chart(document.getElementById("districtChart"),{
@@ -342,10 +398,15 @@ data:{
 labels:Object.keys(district),
 datasets:[{
 data:Object.values(district),
-backgroundColor:["#17a2b8","#6610f2","#fd7e14","#e83e8c","#20c997","#6c757d"]
+backgroundColor:[
+"#17a2b8","#6610f2","#fd7e14",
+"#e83e8c","#20c997","#6c757d",
+"#dc3545","#ffc107"
+]
 }]
 },
-options:{responsive:true}
+options:{responsive:true},
+plugins:[customLabelsPlugin]
 });
 }
 
