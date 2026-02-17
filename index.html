@@ -238,11 +238,13 @@ const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQz914IFr1jBOBui
 let rawData=[];
 let deptChart,districtChart;
 
+/* ---------------- CLOCK ---------------- */
 function updateClock(){
 document.getElementById("clock").innerText=new Date().toLocaleString();
 }
 setInterval(updateClock,1000);
 
+/* ---------------- LOAD DATA ---------------- */
 Papa.parse(sheetURL,{
 download:true,
 header:true,
@@ -254,16 +256,20 @@ applyFilters();
 }
 });
 
+/* ---------------- DROPDOWNS ---------------- */
 function populateDropdowns(){
 ["DEPARTMENT","DISTRICT","DIAGNOSIS","GENDER"].forEach(field=>{
 let select=document.getElementById(field.toLowerCase());
 select.innerHTML="<option value=''>All</option>";
-[...new Set(rawData.map(r=>r[field]).filter(Boolean))].forEach(val=>{
+[...new Set(rawData.map(r=>r[field]).filter(Boolean))]
+.sort()
+.forEach(val=>{
 select.innerHTML+=`<option>${val}</option>`;
 });
 });
 }
 
+/* ---------------- AGE GROUP ---------------- */
 function getAgeGroup(age){
 age=parseFloat(age);
 if(isNaN(age)) return "";
@@ -277,6 +283,7 @@ if(age>=65) return "65 Years & above";
 return "";
 }
 
+/* ---------------- FILTER ---------------- */
 function applyFilters(){
 
 let from=document.getElementById("fromDate").value;
@@ -301,119 +308,136 @@ updateKPIs(filtered);
 drawCharts(filtered);
 }
 
+/* ---------------- KPI ---------------- */
 function updateKPIs(data){
 document.getElementById("totalDeaths").innerText=data.length;
 document.getElementById("maleDeaths").innerText=data.filter(d=>d.GENDER?.toLowerCase()==="male").length;
 document.getElementById("femaleDeaths").innerText=data.filter(d=>d.GENDER?.toLowerCase()==="female").length;
 }
 
-function groupData(data,key){
+/* ---------------- GROUP DATA ---------------- */
+function groupAndSort(data,key){
+
 let obj={};
 data.forEach(r=>{
 let val=r[key]||"Unknown";
 obj[val]=(obj[val]||0)+1;
 });
-return obj;
+
+let sorted=Object.entries(obj)
+.sort((a,b)=>b[1]-a[1]);
+
+return {
+labels: sorted.map(item=>item[0]),
+values: sorted.map(item=>item[1])
+};
 }
 
-/* ---------- Custom Plugin for Labels & Center Text ---------- */
+/* ---------------- RANDOM COLOR GENERATOR ---------------- */
+function generateColors(count){
+const colors=[];
+for(let i=0;i<count;i++){
+colors.push(`hsl(${Math.random()*360},70%,55%)`);
+}
+return colors;
+}
 
-const customLabelsPlugin = {
-id: 'customLabelsPlugin',
-afterDatasetsDraw(chart, args, pluginOptions) {
+/* ---------------- BAR VALUE LABEL PLUGIN ---------------- */
+const barValuePlugin={
+id:'barValuePlugin',
+afterDatasetsDraw(chart){
 
-const {ctx} = chart;
+const {ctx}=chart;
 ctx.save();
 
-if(chart.config.type === "bar"){
-chart.data.datasets.forEach((dataset, i)=>{
-chart.getDatasetMeta(i).data.forEach((bar, index)=>{
-let value = dataset.data[index];
-ctx.fillStyle = "#000";
-ctx.font = "bold 12px Arial";
-ctx.textAlign = "center";
-ctx.fillText(value, bar.x, bar.y - 5);
-});
-});
-}
+chart.data.datasets.forEach((dataset,i)=>{
+chart.getDatasetMeta(i).data.forEach((bar,index)=>{
 
-if(chart.config.type === "pie"){
-
-let dataset = chart.data.datasets[0];
-let total = dataset.data.reduce((a,b)=>a+b,0);
-
-chart.getDatasetMeta(0).data.forEach((slice, i)=>{
-let value = dataset.data[i];
-let percentage = ((value/total)*100).toFixed(1)+"%";
-let pos = slice.tooltipPosition();
-
-ctx.fillStyle="#fff";
-ctx.font="bold 12px Arial";
-ctx.textAlign="center";
-ctx.fillText(value+" ("+percentage+")",pos.x,pos.y);
-});
-
-// Total in center
-let width = chart.width;
-let height = chart.height;
+let value=dataset.data[index];
 
 ctx.fillStyle="#000";
-ctx.font="bold 18px Arial";
+ctx.font="bold 12px Arial";
 ctx.textAlign="center";
-ctx.fillText("Total", width/2, height/2 - 10);
-ctx.fillText(total, width/2, height/2 + 15);
-}
+ctx.fillText(value, bar.x, bar.y - 5);
+
+});
+});
 
 ctx.restore();
 }
 };
 
+/* ---------------- DRAW CHARTS ---------------- */
 function drawCharts(data){
 
-if(deptChart) deptChart.destroy();
-if(districtChart) districtChart.destroy();
+if(deptChart){
+deptChart.destroy();
+deptChart=null;
+}
 
-let dept=groupData(data,"DEPARTMENT");
-let district=groupData(data,"DISTRICT");
+if(districtChart){
+districtChart.destroy();
+districtChart=null;
+}
+
+/* ----- WARD / DEPARTMENT ----- */
+let deptData=groupAndSort(data,"DEPARTMENT");
+let deptColors=generateColors(deptData.labels.length);
 
 deptChart=new Chart(document.getElementById("deptChart"),{
 type:"bar",
 data:{
-labels:Object.keys(dept),
+labels:deptData.labels,
 datasets:[{
-data:Object.values(dept),
-backgroundColor:"#007bff"
+label:"Deaths by Ward",
+data:deptData.values,
+backgroundColor:deptColors,
+borderRadius:6
 }]
 },
 options:{
 responsive:true,
-plugins:{legend:{display:false}}
+plugins:{legend:{display:false}},
+scales:{
+y:{beginAtZero:true}
+}
 },
-plugins:[customLabelsPlugin]
+plugins:[barValuePlugin]
 });
+
+/* ----- DISTRICT ----- */
+let districtData=groupAndSort(data,"DISTRICT");
+let districtColors=generateColors(districtData.labels.length);
 
 districtChart=new Chart(document.getElementById("districtChart"),{
-type:"pie",
+type:"bar",
 data:{
-labels:Object.keys(district),
+labels:districtData.labels,
 datasets:[{
-data:Object.values(district),
-backgroundColor:[
-"#17a2b8","#6610f2","#fd7e14",
-"#e83e8c","#20c997","#6c757d",
-"#dc3545","#ffc107"
-]
+label:"Deaths by District",
+data:districtData.values,
+backgroundColor:districtColors,
+borderRadius:6
 }]
 },
-options:{responsive:true},
-plugins:[customLabelsPlugin]
+options:{
+responsive:true,
+plugins:{legend:{display:false}},
+scales:{
+y:{beginAtZero:true}
+}
+},
+plugins:[barValuePlugin]
 });
+
 }
 
+/* ---------------- EVENT LISTENERS ---------------- */
 document.querySelectorAll("select,input").forEach(el=>{
 el.addEventListener("change",applyFilters);
 });
 
+/* ---------------- PDF ---------------- */
 async function generatePDF(){
 const { jsPDF } = window.jspdf;
 let doc=new jsPDF();
